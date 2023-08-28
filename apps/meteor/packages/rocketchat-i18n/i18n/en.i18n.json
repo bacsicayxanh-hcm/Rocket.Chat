@@ -6008,6 +6008,9 @@
   "Invite_link": "Invite link",
   "All_invite_status": "All invite status",
   "All_invite_types": "All invite types",
-  "Invite types": "Invite types",
+  "Invite_types": "Invite types",
+  "Invite_type": "Invite type",
+  "Invite_status": "Invite status",
+  "Usage_allowance": "Usage allowance",
   "Theme_Appearence": "Theme Appearence"
 }

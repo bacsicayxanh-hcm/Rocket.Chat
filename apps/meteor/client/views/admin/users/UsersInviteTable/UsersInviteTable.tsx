@@ -1,12 +1,15 @@
-import { Pagination } from '@rocket.chat/fuselage';
-import { useMediaQuery, useDebouncedValue, useMutableCallback } from '@rocket.chat/fuselage-hooks';
+import type { IInvite } from '@rocket.chat/core-typings';
+import { Box, Pagination, style } from '@rocket.chat/fuselage';
+import { useMediaQuery, useDebouncedValue } from '@rocket.chat/fuselage-hooks';
+import { Users } from '@rocket.chat/models';
 import { escapeRegExp } from '@rocket.chat/string-helpers';
-import { useEndpoint, useRoute, useToastMessageDispatch, useTranslation } from '@rocket.chat/ui-contexts';
+import type { OptionProp } from '@rocket.chat/ui-client';
+import { useEndpoint, useRouter, useToastMessageDispatch, useTranslation } from '@rocket.chat/ui-contexts';
 import { useQuery } from '@tanstack/react-query';
+import UsersInviteTableFilters from './UsersInviteTableFilters';
 import type { ReactElement, MutableRefObject } from 'react';
-import React, { useRef, useMemo, useState, useEffect } from 'react';
+import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
-import FilterByText from '../../../../components/FilterByText';
 import GenericNoResults from '../../../../components/GenericNoResults';
 import {
 	GenericTable,
@@ -14,10 +17,11 @@ import {
 	GenericTableHeaderCell,
 	GenericTableBody,
 	GenericTableLoadingTable,
+	GenericTableCell,
+	GenericTableRow,
 } from '../../../../components/GenericTable';
 import { usePagination } from '../../../../components/GenericTable/hooks/usePagination';
 import { useSort } from '../../../../components/GenericTable/hooks/useSort';
-import UsersInviteTableRow from './UsersInviteTableRow';
 
 type InviteFilters = {
 	searchText: string;
@@ -26,10 +30,10 @@ type InviteFilters = {
 };
 // TODO: create functions to find user informations about: Invite type; Email; Date; Invite status; Usage allowance!
 
-// TODO: Missing error state
-const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }): ReactElement | null => {
+const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }): ReactElement => {
 	const t = useTranslation();
-	const usersRoute = useRoute('admin-users');
+	const router = useRouter();
+
 	const mediaQuery = useMediaQuery('(min-width: 1024px)');
 	const [inviteFilters, setInviteFilters] = useState<InviteFilters>({ searchText: '', status: [], types: [] });
 
@@ -72,15 +76,37 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 		500,
 	);
 
-	const getUsers = useEndpoint('GET', '/v1/users.list');
+	const getInvites = useEndpoint('GET', '/v1/listInvites');
 
 	const dispatchToastMessage = useToastMessageDispatch();
 
+	// TODO: check if we need to import users or invites!!
 	const { data, isLoading, error, isSuccess, refetch } = useQuery(
-		['users', query],
+		['invites', query],
 		async () => {
-			const users = await getUsers(query);
-			return users;
+			const {days,
+    maxUses,
+    rid,
+    userId,
+    createdAt,
+    expires,
+    uses,
+    url,
+    _id,
+				_updatedAt }[] = await getInvites();
+			
+			/*
+			days: number;
+	maxUses: number;
+	rid: string;
+	userId: string;
+	createdAt: Date;
+	expires: Date | null;
+	uses: number;
+	url: string;
+	*/
+			// TODO: tenho que fazer um map de tudo pra mudar a prop createdAt pra Date! :(
+			return invites;
 		},
 		{
 			onError: (error) => {
@@ -97,81 +123,160 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 		prevInviteFilterText.current = searchText;
 	}, [searchText]);
 
-	const handleClick = useMutableCallback((id): void =>
-		// TODO: use router.navigate or usersRout.push?
-		usersRoute.push({
-			context: 'info',
-			id,
-		}),
+	const handleClick = useCallback(
+		(id): void =>
+			router.navigate({
+				name: 'admin-users',
+				params: {
+					context: 'info',
+					id,
+				},
+			}),
+		[router],
 	);
 
 	const headers = useMemo(
 		() => [
-			<GenericTableHeaderCell w='x200' key='name' direction={sortDirection} active={sortBy === 'type'} onClick={setSort} sort='type'>
-				{t('Invite_type')}
-			</GenericTableHeaderCell>,
+			mediaQuery && (
+				<GenericTableHeaderCell w='x200' key='name' direction={sortDirection} active={sortBy === 'type'} onClick={setSort} sort='type'>
+					{t('Invite_type')}
+				</GenericTableHeaderCell>
+			),
 
-			<GenericTableHeaderCell
-				w='x140'
-				key='email'
-				direction={sortDirection}
-				active={sortBy === 'emails.address'}
-				onClick={setSort}
-				sort='emails.address'
-			>
-				{t('Email')}
-			</GenericTableHeaderCell>,
+			mediaQuery && (
+				<GenericTableHeaderCell
+					w='x140'
+					key='email'
+					direction={sortDirection}
+					active={sortBy === 'emails.address'}
+					onClick={setSort}
+					sort='emails.address'
+				>
+					{t('Email')}
+				</GenericTableHeaderCell>
+			),
 
-			<GenericTableHeaderCell w='x120' key='date' direction={sortDirection} active={sortBy === 'date'} onClick={setSort} sort='date'>
-				{t('Date')}
-			</GenericTableHeaderCell>,
+			mediaQuery && (
+				<GenericTableHeaderCell w='x120' key='date' direction={sortDirection} active={sortBy === 'date'} onClick={setSort} sort='date'>
+					{t('Date')}
+				</GenericTableHeaderCell>
+			),
 
-			// TODO: check which sorts need this:
-			// mediaQuery && (
-			// 	<GenericTableHeaderCell w='x120' key='roles' onClick={setSort}>
-			// 		{t('Roles')}
-			// 	</GenericTableHeaderCell>
-			// ),
+			mediaQuery && (
+				<GenericTableHeaderCell
+					w='x100'
+					key='inviteStatus'
+					direction={sortDirection}
+					active={sortBy === 'inviteStatus'}
+					onClick={setSort}
+					sort='inviteStatus'
+				>
+					{t('Invite_status')}
+				</GenericTableHeaderCell>
+			),
 
-			<GenericTableHeaderCell
-				w='x100'
-				key='inviteStatus'
-				direction={sortDirection}
-				active={sortBy === 'inviteStatus'}
-				onClick={setSort}
-				sort='inviteStatus'
-			>
-				{t('Invite_status')}
-			</GenericTableHeaderCell>,
-
-			<GenericTableHeaderCell w='x100' key='usage' direction={sortDirection} active={sortBy === 'usage'} onClick={setSort} sort='usage'>
-				{t('Usage_allowance')}
-			</GenericTableHeaderCell>,
+			mediaQuery && (
+				<GenericTableHeaderCell w='x100' key='usage' direction={sortDirection} active={sortBy === 'usage'} onClick={setSort} sort='usage'>
+					{t('Usage_allowance')}
+				</GenericTableHeaderCell>
+			),
 		],
 		[mediaQuery, setSort, sortBy, sortDirection, t],
 	);
 
 	if (error) {
-		return null;
+		throw error;
 	}
+
+	const renderRow = useCallback(
+		async (invite: IInvite) => {
+			const { userId, createdAt } = invite;
+
+			const user = await Users.findOneById(userId);
+
+			if (!user) {
+				throw new Error('Could not find user');
+			}
+
+			const getInviteType = (invite: IInvite): 'Email' | 'Link' => {
+				// TODO: is this correct? How to check the invite type?
+				if (invite.url) return 'Link';
+				return 'Email';
+			};
+
+			const getInviteStatus = (invite: IInvite): 'Pending' | 'Accepted' | 'Expired' => {
+				const isExpired = (expires: IInvite['expires']): boolean => {
+					if (expires && expires.getTime() < new Date().getTime()) {
+						return true;
+					}
+					return false;
+				};
+
+				if (isExpired(invite.expires)) return 'Expired';
+
+				// TODO: how to check if the invite was accepted or is still pending?
+				return 'Accepted';
+			};
+
+			const getUsageAllowance = ({ maxUses, uses }: IInvite) => {
+				if (maxUses > 0) return `${uses} / ${maxUses}`;
+
+				return `${uses} / ${t('Unlimited')}`;
+			};
+
+			return (
+				<GenericTableRow
+					action
+					key={userId}
+					onKeyDown={handleClick(userId)}
+					onClick={handleClick(userId)}
+					tabIndex={0}
+					role='link'
+					qa-room-id={userId}
+				>
+					<GenericTableCell>
+						<Box color='hint' fontScale='p2m' style={style}>
+							{t(getInviteType(invite))}
+						</Box>
+						<Box mi={4} />
+					</GenericTableCell>
+					<GenericTableCell>
+						<Box color='hint' fontScale='p2m' style={style}>
+							{user.emails?.length ? user.emails[0] : '-'}
+						</Box>
+						<Box mi='x4' />
+					</GenericTableCell>
+					{mediaQuery && <GenericTableCell style={style}>{createdAt}</GenericTableCell>}
+					{mediaQuery && <GenericTableCell style={style}>{getInviteStatus(invite)}</GenericTableCell>}
+					<GenericTableCell style={style}>{getUsageAllowance(invite)}</GenericTableCell>
+				</GenericTableRow>
+			);
+		},
+		[mediaQuery, handleClick, t],
+	);
+
+	// TODO: add filter functions here and create a single filtered invites list!
 
 	return (
 		<>
-			<FilterByText autoFocus placeholder={t('Search_Users')} onChange={({ text }): void => setText(text)} />
+			<UsersInviteTableFilters setFilters={setInviteFilters} />
+
 			{isLoading && (
 				<GenericTable>
 					<GenericTableHeader>{headers}</GenericTableHeader>
 					<GenericTableBody>{isLoading && <GenericTableLoadingTable headerCells={5} />}</GenericTableBody>
 				</GenericTable>
 			)}
-			{data?.users && data.count > 0 && isSuccess && (
+			{isSuccess && data && data.length > 0 && (
 				<>
 					<GenericTable>
 						<GenericTableHeader>{headers}</GenericTableHeader>
 						<GenericTableBody>
-							{data?.users.map((user) => (
+							{isSuccess && data.map((invite: IInvite) => renderRow(invite))}
+
+							{/* {data?.users.map((user) => (
 								<UsersInviteTableRow key={user._id} onClick={handleClick} mediaQuery={mediaQuery} user={user} />
-							))}
+							))} */}
 						</GenericTableBody>
 					</GenericTable>
 					<Pagination
@@ -185,7 +290,7 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 					/>
 				</>
 			)}
-			{isSuccess && data?.count === 0 && <GenericNoResults />}
+			{isSuccess && data?.length === 0 && <GenericNoResults />}
 		</>
 	);
 };
