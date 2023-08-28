@@ -6,7 +6,6 @@ import { escapeRegExp } from '@rocket.chat/string-helpers';
 import type { OptionProp } from '@rocket.chat/ui-client';
 import { useEndpoint, useRouter, useToastMessageDispatch, useTranslation } from '@rocket.chat/ui-contexts';
 import { useQuery } from '@tanstack/react-query';
-import UsersInviteTableFilters from './UsersInviteTableFilters';
 import type { ReactElement, MutableRefObject } from 'react';
 import React, { useRef, useMemo, useState, useEffect, useCallback } from 'react';
 
@@ -22,6 +21,7 @@ import {
 } from '../../../../components/GenericTable';
 import { usePagination } from '../../../../components/GenericTable/hooks/usePagination';
 import { useSort } from '../../../../components/GenericTable/hooks/useSort';
+import UsersInviteTableFilters from '../UsersInviteTableFilters';
 
 type InviteFilters = {
 	searchText: string;
@@ -80,32 +80,22 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 
 	const dispatchToastMessage = useToastMessageDispatch();
 
-	// TODO: check if we need to import users or invites!!
 	const { data, isLoading, error, isSuccess, refetch } = useQuery(
-		['invites', query],
+		['users', query, 'admin'],
 		async () => {
-			const {days,
-    maxUses,
-    rid,
-    userId,
-    createdAt,
-    expires,
-    uses,
-    url,
-    _id,
-				_updatedAt }[] = await getInvites();
-			
-			/*
-			days: number;
-	maxUses: number;
-	rid: string;
-	userId: string;
-	createdAt: Date;
-	expires: Date | null;
-	uses: number;
-	url: string;
-	*/
-			// TODO: tenho que fazer um map de tudo pra mudar a prop createdAt pra Date! :(
+			const results = await getInvites(query);
+
+			// The result from the API uses strings for dates, so we need to change that. Also, there's an extra prop `updatedAt`, which doesn't exist on IInvite.
+			const invites: IInvite[] = results.map(
+				({ _updatedAt, createdAt, expires, ...args }: { _updatedAt: string; createdAt: string; expires: string; args: any }) => {
+					return {
+						...args,
+						createdAt: new Date(createdAt),
+						expires: expires !== null ? new Date(expires) : null,
+					};
+				},
+			);
+
 			return invites;
 		},
 		{
@@ -228,8 +218,8 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 				<GenericTableRow
 					action
 					key={userId}
-					onKeyDown={handleClick(userId)}
-					onClick={handleClick(userId)}
+					onKeyDown={handleClick(userId) as any}
+					onClick={handleClick(userId) as any}
 					tabIndex={0}
 					role='link'
 					qa-room-id={userId}
