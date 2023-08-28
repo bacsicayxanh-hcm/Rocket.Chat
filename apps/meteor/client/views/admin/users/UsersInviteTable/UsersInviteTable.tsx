@@ -21,7 +21,9 @@ import {
 } from '../../../../components/GenericTable';
 import { usePagination } from '../../../../components/GenericTable/hooks/usePagination';
 import { useSort } from '../../../../components/GenericTable/hooks/useSort';
-import UsersInviteTableFilters from '../UsersInviteTableFilters';
+import UsersInviteTableFilters from './UsersInviteTableFilters;
+import { useFilteredTypesInvites } from './useFilteredTypesInvites';
+import { useFilteredStatusInvites } from './useFilteredStatusInvites';
 
 type InviteFilters = {
 	searchText: string;
@@ -174,6 +176,17 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 		[mediaQuery, setSort, sortBy, sortDirection, t],
 	);
 
+	function intersectArraysWithoutDuplicates(array1: IInvite[], array2: IInvite[]) {
+		const set2 = new Set(array2);
+
+		return [...new Set(array1)].filter((item) => set2.has(item));
+	}
+
+	const inviteStatusList = useFilteredStatusInvites(inviteFilters.status, isLoading, data);
+	const inviteTypesList = useFilteredTypesInvites(inviteFilters.types, isLoading, data);
+
+	const invitesList = intersectArraysWithoutDuplicates(inviteStatusList, inviteTypesList);
+
 	if (error) {
 		throw error;
 	}
@@ -262,11 +275,7 @@ const UsersInviteTable = ({ reload }: { reload: MutableRefObject<() => void> }):
 					<GenericTable>
 						<GenericTableHeader>{headers}</GenericTableHeader>
 						<GenericTableBody>
-							{isSuccess && data.map((invite: IInvite) => renderRow(invite))}
-
-							{/* {data?.users.map((user) => (
-								<UsersInviteTableRow key={user._id} onClick={handleClick} mediaQuery={mediaQuery} user={user} />
-							))} */}
+							{isSuccess && invitesList?.map((invite: IInvite) => renderRow(invite))}
 						</GenericTableBody>
 					</GenericTable>
 					<Pagination
