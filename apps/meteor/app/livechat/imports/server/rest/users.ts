@@ -142,3 +142,31 @@ API.v1.addRoute(
 		},
 	},
 );
+
+API.v1.addRoute(
+    'livechat/agents',
+    {
+        authRequired: false,
+        validateParams: {
+            GET: isLivechatUsersManagerGETProps,
+        },
+    },
+    {
+        async get() {
+            const { offset, count } = await getPaginationItems(this.queryParams);
+            const { sort } = await this.parseJsonQuery();
+            const { text } = this.queryParams;
+
+            return API.v1.success(
+                await findAgents({
+                    text,
+                    pagination: {
+                        offset,
+                        count,
+                        sort,
+                    },
+                }),
+            );
+        },
+    },
+);
