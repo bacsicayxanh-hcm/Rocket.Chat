@@ -24,6 +24,7 @@ API.v1.addRoute(
 					servedBy: 1,
 					open: 1,
 					callStatus: 1,
+                    lastMessage: 1,
 				},
 			};
 
