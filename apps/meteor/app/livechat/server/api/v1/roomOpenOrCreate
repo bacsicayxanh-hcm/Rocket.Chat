@@ -33,7 +33,7 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 		// let room: IOmnichannelRoom | null;
 		if (!roomId) {
 			if (agentId) {
-				let rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest.id,agentId,IOmnichannelRoom,{userCount: 2}).toArray();
+				let rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest.id,agentId,IOmnichannelRoom,{usersCount: 2}).toArray();
 				if (rooms && rooms.length > 0 ) {
 					return API.v1.success({room: rooms[0], newRoom: false });
 				}
