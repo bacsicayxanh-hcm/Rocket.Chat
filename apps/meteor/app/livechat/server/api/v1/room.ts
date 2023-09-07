@@ -87,7 +87,63 @@ API.v1.addRoute('livechat/room', {
 		return API.v1.success({ room: froom, newRoom: false });
 	},
 });
+API.v1.addRoute('livechat/room.open', {
+	async get() {
+		// I'll temporary use check for validation, as validateParams doesnt support what's being done here
+		const extraCheckParams = await onCheckRoomParams({
+			token: String,
+			rid: Match.Maybe(String),
+			agentId: Match.Maybe(String),
+		});
 
+		check(this.queryParams, extraCheckParams as any);
+
+		const { token, rid: roomId, agentId, ...extraParams } = this.queryParams;
+
+		const guest = token && (await findGuest(token));
+		if (!guest) {
+			throw new Error('invalid-token');
+		}
+
+		let room: IOmnichannelRoom | null;
+		if (!roomId) {
+			if (agentId) {
+				room = await LivechatRooms.findByVisitorIdAndAgentId(guest.id,agentId,{},{});
+			}
+			if (room) {
+				return API.v1.success({ room, newRoom: false });
+			}
+
+			let agent: SelectedAgent | undefined;
+			const agentObj = agentId && (await findAgent(agentId));
+			if (agentObj) {
+				if (isAgentWithInfo(agentObj)) {
+					const { username = undefined } = agentObj;
+					agent = { agentId, username };
+				} else {
+					agent = { agentId };
+				}
+			}
+
+			const rid = Random.id();
+			const roomInfo = {
+				source: {
+					type: isWidget(this.request.headers) ? OmnichannelSourceType.WIDGET : OmnichannelSourceType.API,
+				},
+			};
+
+			const newRoom = await getRoom({ guest, rid, agent, roomInfo, extraParams });
+			return API.v1.success(newRoom);
+		}
+
+		const froom = await LivechatRooms.findOneOpenByRoomIdAndVisitorToken(roomId, token, {});
+		if (!froom) {
+			throw new Error('invalid-room');
+		}
+
+		return API.v1.success({ room: froom, newRoom: false });
+	},
+});
 // Note: use this route if a visitor is closing a room
 // If a RC user(like eg agent) is closing a room, use the `livechat/room.closeByUser` route
 API.v1.addRoute(
