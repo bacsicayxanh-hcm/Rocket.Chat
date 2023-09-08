@@ -13,4 +13,5 @@ import './v1/transfer';
 import './v1/contact';
 import './v1/webhooks';
 import './v1/integration';
+import './v1/roomOpenOrCreate';
 import './v1/statistics';
