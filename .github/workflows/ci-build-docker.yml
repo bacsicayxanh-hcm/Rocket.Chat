@@ -212,6 +212,6 @@ jobs:
           root-dir: /tmp/build
           docker-tag: ${{ needs.release-versions.outputs.gh-docker-tag }}
           release: preview
-          username: ${{ secrets.CR_USER }}
-          password: ${{ secrets.CR_PAT }}
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASS }}
           registry: ${{ env.DOCKER_REGISTRY }}
