@@ -10,6 +10,8 @@ inputs:
     required: true
   registry:
     required: true
+  image-name:
+    required: true
   username:
     required: false
   password:
@@ -38,7 +40,7 @@ runs:
 
         LOWERCASE_REPOSITORY=$(echo "${{ github.repository_owner }}" | tr "[:upper:]" "[:lower:]")
 
-        IMAGE_NAME_BASE="${{ inputs.registry }}/${LOWERCASE_REPOSITORY}/rocket.chat:${{ inputs.docker-tag }}"
+        IMAGE_NAME_BASE="${{ inputs.registry }}/${inputs.image-name}/rocket.chat:${{ inputs.docker-tag }}"
 
         IMAGE_NAME="${IMAGE_NAME_BASE}.${{ inputs.release }}"
 
@@ -67,16 +69,16 @@ runs:
         echo "image-name=${IMAGE_NAME}" >> $GITHUB_OUTPUT
 
     - name: Login to GitHub Container Registry
-      if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'release' || github.ref == 'refs/heads/develop'
+      if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'release' || github.ref == 'refs/heads/master'
       uses: docker/login-action@v2
       with:
-        registry: ghcr.io
+        registry: ${{ inputs.registry }}
         username: ${{ inputs.username }}
         password: ${{ inputs.password }}
 
     - name: Publish image
       shell: bash
-      if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'release' || github.ref == 'refs/heads/develop'
+      if: github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'release' || github.ref == 'refs/heads/master'
       run: |
         echo "Push Docker image: ${{ steps.build-image.outputs.image-name }}"
 

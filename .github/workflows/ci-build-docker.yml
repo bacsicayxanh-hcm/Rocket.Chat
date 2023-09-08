@@ -11,6 +11,7 @@ concurrency:
 
 env:
   DOCKER_REGISTRY: registry.vngcloud.vn
+  DOCKER_IMAGE_NAME: project_1685601601137/rocket_chat
 
 jobs:
   release-versions:
@@ -212,3 +213,4 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
           registry: ${{ env.DOCKER_REGISTRY }}
+          image-name: ${{ env.DOCKER_IMAGE_NAME }}
