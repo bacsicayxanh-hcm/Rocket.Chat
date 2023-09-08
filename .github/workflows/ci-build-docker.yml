@@ -11,7 +11,7 @@ concurrency:
 
 env:
   DOCKER_REGISTRY: registry.vngcloud.vn
-  DOCKER_IMAGE_NAME: project_1685601601137/rocket_chat
+  DOCKER_IMAGE_NAME: project_1685601601137
 
 jobs:
   release-versions:
