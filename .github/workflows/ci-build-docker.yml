@@ -1,8 +1,6 @@
 name: Build Docker
 
 on:
-  pull_request:
-    branches: '**'
   push:
     branches:
       - master
@@ -12,7 +10,6 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  TOOL_NODE_FLAGS: ${{ vars.TOOL_NODE_FLAGS }}
   DOCKER_REGISTRY: registry.vngcloud.vn
 
 jobs:
