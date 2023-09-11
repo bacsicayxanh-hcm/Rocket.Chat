@@ -1,14 +1,12 @@
-import { check } from 'meteor/check';
-import { Random } from '@rocket.chat/random';
-import { LivechatRooms } from '@rocket.chat/models';
+import {check} from 'meteor/check';
+import {Random} from '@rocket.chat/random';
+import {LivechatRooms} from '@rocket.chat/models';
+import type {ILivechatAgent, IOmnichannelRoom, SelectedAgent} from '@rocket.chat/core-typings';
+import {OmnichannelSourceType} from '@rocket.chat/core-typings';
 
-import { ILivechatAgent, IOmnichannelRoom, SelectedAgent } from '@rocket.chat/core-typings';
-
-import { isOmnichannelRoom, OmnichannelSourceType } from '@rocket.chat/core-typings';
-import { API } from '../../../../api/server';
-import { findGuest, getRoom, findAgent, onCheckRoomParams } from '../lib/livechat';
-import { isWidget } from '../../../../api/server/helpers/isWidget';
-
+import {API} from '../../../../api/server';
+import {findAgent, findGuest, getRoom, onCheckRoomParams} from '../lib/livechat';
+import {isWidget} from '../../../../api/server/helpers/isWidget';
 
 const isAgentWithInfo = (agentObj: ILivechatAgent | { hiddenInfo: true }): agentObj is ILivechatAgent => !('hiddenInfo' in agentObj);
 
@@ -33,12 +31,11 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 		// let room: IOmnichannelRoom | null;
 		if (!roomId) {
 			if (agentId) {
-				let rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest.id,agentId,IOmnichannelRoom,{usersCount: 2}).toArray();
-				if (rooms && rooms.length > 0 ) {
-					return API.v1.success({room: rooms[0], newRoom: false });
+				const rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest.id, agentId, {}, { usersCount: 2 }).toArray();
+				if (rooms && rooms.length > 0) {
+					return API.v1.success({ room: rooms[0], newRoom: false });
 				}
 			}
-			
 
 			let agent: SelectedAgent | undefined;
 			const agentObj = agentId && (await findAgent(agentId));
