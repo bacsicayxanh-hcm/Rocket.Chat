@@ -219,6 +219,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASS }}
           registry: ${{ env.DOCKER_REGISTRY }}
           image-name: ${{ env.DOCKER_IMAGE_NAME }}
+          release: test
 
   deploy-k8s:
     name: Deploy to k8s
@@ -232,4 +233,4 @@ jobs:
           IMAGE_TAG: ${{needs.release-versions.outputs.gh-docker-tag}}
         with:
           args: |
-            helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART }} -n ${{ env.HELM_RELEASE_NAMESPACE }} --version ${{ env.HELM_RELEASE_VERSION }} --repo ${{ env.HELM_RELEASE_REPO }} --reuse-values --set image.tag=$IMAGE_TAG --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}/rocket.chat
+            helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART }} -n ${{ env.HELM_RELEASE_NAMESPACE }} --version ${{ env.HELM_RELEASE_VERSION }} --repo ${{ env.HELM_RELEASE_REPO }} --reuse-values --set image.tag=${{ needs.release-versions.outputs.gh-docker-tag }}.test --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}/rocket.chat
