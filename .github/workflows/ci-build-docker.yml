@@ -230,7 +230,8 @@ jobs:
         uses: wahyd4/kubectl-helm-action@master
         env:
           KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-          IMAGE_TAG: ${{needs.release-versions.outputs.gh-docker-tag}}
+          IMAGE_TAG: ${{needs.release-versions.outputs.gh-docker-tag}}.test
         with:
           args: |
-            helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART }} -n ${{ env.HELM_RELEASE_NAMESPACE }} --version ${{ env.HELM_RELEASE_VERSION }} --repo ${{ env.HELM_RELEASE_REPO }} --reuse-values --set image.tag=${{ needs.release-versions.outputs.gh-docker-tag }}.test --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}/rocket.chat
+            echo $IMAGE_TAG && \
+            helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART }} -n ${{ env.HELM_RELEASE_NAMESPACE }} --version ${{ env.HELM_RELEASE_VERSION }} --repo ${{ env.HELM_RELEASE_REPO }} --reuse-values --set image.tag=$IMAGE_TAG --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}/rocket.chat
