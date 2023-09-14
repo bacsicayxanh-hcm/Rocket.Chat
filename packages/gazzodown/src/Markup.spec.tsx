@@ -31,9 +31,27 @@ it('renders a big emoji block', () => {
 					{
 						type: 'BIG_EMOJI',
 						value: [
-							{ type: 'EMOJI', value: { type: 'PLAIN_TEXT', value: 'smile' }, shortCode: 'smile' },
-							{ type: 'EMOJI', value: undefined, unicode: '😀' },
-							{ type: 'EMOJI', value: { type: 'PLAIN_TEXT', value: 'smile' }, shortCode: 'smile' },
+							{ 
+								type: 'EMOJI', 
+								value: { 
+									type: 'PLAIN_TEXT', 
+									value: 'smile' 
+								}, 
+								shortCode: 'smile' 
+							},
+							{ 
+								type: 'EMOJI', 
+								value: undefined,
+								unicode: '😀' 
+							},
+							{ 
+								type: 'EMOJI', 
+								value: { 
+									type: 'PLAIN_TEXT', 
+									value: 'smile' 
+								}, 
+								shortCode: 'smile' 
+							},
 						],
 					},
 				]}
