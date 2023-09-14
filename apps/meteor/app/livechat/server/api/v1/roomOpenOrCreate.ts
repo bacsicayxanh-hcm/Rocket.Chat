@@ -31,9 +31,15 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 		// let room: IOmnichannelRoom | null;
 		if (!roomId) {
 			if (agentId) {
+<<<<<<< HEAD:apps/meteor/app/livechat/server/api/v1/roomOpenOrCreate.ts
 				const rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest.id, agentId, {}, { usersCount: 2 }).toArray();
 				if (rooms && rooms.length > 0) {
 					return API.v1.success({ room: rooms[0], newRoom: false });
+=======
+				let rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorIdAndAgentId(guest._id,agentId,IOmnichannelRoom,{usersCount: 2}).toArray();
+				if (rooms && rooms.length > 0 ) {
+					return API.v1.success({room: rooms[0], newRoom: false });
+>>>>>>> add_feature:apps/meteor/app/livechat/server/api/v1/roomOpenOrCreate
 				}
 			}
 
