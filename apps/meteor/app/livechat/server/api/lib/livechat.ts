@@ -54,6 +54,7 @@ async function findDepartments(
 export function findGuest(token: string): Promise<ILivechatVisitor | null> {
 	return LivechatVisitors.getVisitorByToken(token, {
 		projection: {
+			_id: 1,
 			name: 1,
 			username: 1,
 			token: 1,
