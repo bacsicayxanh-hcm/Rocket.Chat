@@ -329,6 +329,9 @@ export class NotificationsModule {
 			if (e === 'webrtc') {
 				return true;
 			}
+			if (e === 'rooms-changed') {
+				return true;
+			}
 
 			return Boolean(this.userId) && this.userId === userId;
 		});
