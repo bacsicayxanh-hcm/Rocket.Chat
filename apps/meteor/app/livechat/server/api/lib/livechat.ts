@@ -6,9 +6,6 @@ import type {
 	IOmnichannelRoom,
 	SelectedAgent,
 } from '@rocket.chat/core-typings';
-import { EmojiCustom, LivechatTrigger, LivechatVisitors, LivechatRooms, LivechatDepartment } from '@rocket.chat/models';
-import { Random } from '@rocket.chat/random';
-import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../../lib/callbacks';
 import { i18n } from '../../../../../server/lib/i18n';
@@ -127,6 +124,36 @@ export function getRoom({
 	return LivechatTyped.getRoom(guest, message, roomInfo, agent, extraParams);
 }
 
+export function getRoomWithoutCheckOnlineAgent({
+	guest,
+	rid,
+	roomInfo,
+	agent,
+	extraParams,
+}: {
+	guest: ILivechatVisitor;
+	rid: string;
+	roomInfo: {
+		source?: IOmnichannelRoom['source'];
+	};
+	agent?: SelectedAgent;
+	extraParams?: Record<string, any>;
+}): Promise<{ room: IOmnichannelRoom; newRoom: boolean }> {
+	const token = guest?.token;
+
+	const message = {
+		_id: Random.id(),
+		rid,
+		msg: '',
+		token,
+		ts: new Date(),
+	};
+
+	return LivechatTyped.getRoomWithoutCheckOnlineAgent(guest, message, roomInfo, agent, extraParams);
+}
+
+
+export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: true } | ILivechatAgent> {
 export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: boolean } | ILivechatAgent> {
 	return normalizeAgent(agentId);
 }
