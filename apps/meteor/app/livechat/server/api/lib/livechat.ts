@@ -127,6 +127,35 @@ export function getRoom({
 	return LivechatTyped.getRoom(guest, message, roomInfo, agent, extraParams);
 }
 
+export function getRoomWithoutCheckOnlineAgent({
+	guest,
+	rid,
+	roomInfo,
+	agent,
+	extraParams,
+}: {
+	guest: ILivechatVisitor;
+	rid: string;
+	roomInfo: {
+		source?: IOmnichannelRoom['source'];
+	};
+	agent?: SelectedAgent;
+	extraParams?: Record<string, any>;
+}): Promise<{ room: IOmnichannelRoom; newRoom: boolean }> {
+	const token = guest?.token;
+
+	const message = {
+		_id: Random.id(),
+		rid,
+		msg: '',
+		token,
+		ts: new Date(),
+	};
+
+	return LivechatTyped.getRoomWithoutCheckOnlineAgent(guest, message, roomInfo, agent, extraParams);
+}
+
+
 export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: true } | ILivechatAgent> {
 	return normalizeAgent(agentId);
 }
