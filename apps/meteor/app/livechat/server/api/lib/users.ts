@@ -35,6 +35,9 @@ async function findUsers({
 			statusLivechat: 1,
 			emails: 1,
 			livechat: 1,
+			avatarUrl:1,
+			customFields:1,
+			bio:1,
 		},
 	});
 
