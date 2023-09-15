@@ -347,7 +347,7 @@ class LivechatClass {
 			source?: IOmnichannelRoom['source'];
 			[key: string]: unknown;
 		},
-		agent?: SelectedAgent,
+		agent: SelectedAgent,
 		extraData?: Record<string, unknown>,
 	) {
 		if (!this.enabled()) {
@@ -372,9 +372,9 @@ class LivechatClass {
 		}
 
 		if (room == null) {
-			const defaultAgent = await callbacks.run('livechat.checkDefaultAgentOnNewRoom', agent, guest);
-			// if no department selected verify if there is at least one active and pick the first
-			if (!defaultAgent && !guest.department) {
+			
+	
+			if (!agent && !guest.department) {
 				const department = await this.getRequiredDepartment();
 				Livechat.logger.debug(`No department or default agent selected for ${guest._id}`);
 
@@ -390,7 +390,7 @@ class LivechatClass {
 				guest,
 				message,
 				roomInfo,
-				agent: defaultAgent,
+				agent: agent,
 				extraData,
 			});
 			newRoom = true;
