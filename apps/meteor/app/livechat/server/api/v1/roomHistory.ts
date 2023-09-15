@@ -31,7 +31,7 @@ API.v1.addRoute(
 					open: 1,
 					callStatus: 1,
                     lastMessage: 1,
-					unread:1,
+					unreadNotLoaded:1,
 				},
 			};
 
