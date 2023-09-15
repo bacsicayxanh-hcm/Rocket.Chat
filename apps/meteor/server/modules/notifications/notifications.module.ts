@@ -417,8 +417,7 @@ export class NotificationsModule {
 		});
 
 		this.streamRoles.allowWrite('none');
-		this.streamRoles.allowRead('logged');
-
+		this.streamRoles.allowRead('none');
 		this.streamUser.on('_afterPublish', async (streamer, publication: IPublication, eventName: string): Promise<void> => {
 			const { userId } = publication._session;
 			if (!userId) {

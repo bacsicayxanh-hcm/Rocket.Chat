@@ -1681,7 +1681,7 @@ export class UsersRaw extends BaseRaw {
 				name: 1,
 				username: 1,
 				phone: 1,
-				roles:1,
+				roles:1,	
 				type:1,
 				active:1,
 				customFields: 1,
