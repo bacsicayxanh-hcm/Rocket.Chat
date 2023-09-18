@@ -392,7 +392,7 @@ class LivechatClass {
 				guest,
 				message,
 				roomInfo,
-				agent: agent,
+				agent,
 				extraData,
 			});
 			newRoom = true;
