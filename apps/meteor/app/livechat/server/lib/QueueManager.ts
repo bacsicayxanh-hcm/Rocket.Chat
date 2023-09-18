@@ -19,6 +19,10 @@ import {
 } from './Helper';
 import {Logger} from '../../../logger/server';
 import {RoutingManager} from './RoutingManager';
+import { checkServiceStatus, createLivechatRoom, createLivechatInquiry } from './Helper';
+import { callbacks } from '../../../../lib/callbacks';
+import { Logger } from '../../../logger/server';
+import { RoutingManager } from './RoutingManager';
 
 const logger = new Logger('QueueManager');
 
@@ -144,7 +148,7 @@ export const QueueManager: queueManager = {
 		const { rid } = message;
 		const name = (roomInfo && roomInfo.fname) || guest.name || guest.username;
 
-		const room = await LivechatRooms.findOneById(await createLivechatRoomWithAgent(rid, name, guest,agent, roomInfo, extraData));
+		const room = await LivechatRooms.findOneById(await createLivechatRoom(rid, name, guest, roomInfo, extraData));
 		logger.debug(`Room for visitor ${guest._id} created with id ${room._id}`);
 
 		const inquiry = await LivechatInquiry.findOneById(
@@ -157,12 +161,16 @@ export const QueueManager: queueManager = {
 				extraData: { ...extraData, source: roomInfo.source },
 			}),
 		);
+
 		logger.debug(`Generated inquiry for visitor ${guest._id} with id ${inquiry._id} [Not queued]`);
 
 		await LivechatRooms.updateRoomCount();
 
-		await queueInquiry(inquiry, agent);
-		logger.debug(`Inquiry ${inquiry._id} queued`);
+
+		await RoutingManager.assignAgent(inquiry,agent);
+
+		// await queueInquiry(inquiry, agent);
+		// logger.debug(`Inquiry ${inquiry._id} queued`);
 
 		const newRoom = await LivechatRooms.findOneById(rid);
 		if (!newRoom) {

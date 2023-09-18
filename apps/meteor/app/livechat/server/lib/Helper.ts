@@ -214,64 +214,7 @@ export const createLivechatInquiry = async ({
 	return result;
 };
 
-export const createLivechatInquiryWithAgent = async ({ rid, name, guest,agent, message, initialStatus, extraData = {} }) => {
-	check(rid, String);
-	check(name, String);
-	check(
-		guest,
-		Match.ObjectIncluding({
-			_id: String,
-			username: String,
-			status: Match.Maybe(String),
-			department: Match.Maybe(String),
-		}),
-	);
-	check(
-		message,
-		Match.ObjectIncluding({
-			msg: String,
-		}),
-	);
 
-	const extraInquiryInfo = await callbacks.run('livechat.beforeInquiry', extraData);
-
-	const { _id, username, token, department, status = 'online' } = guest;
-	const { msg } = message;
-	const ts = new Date();
-
-	logger.debug(`Creating livechat inquiry for visitor ${_id}`);
-
-	const inquiry = {
-		rid,
-		name,
-		ts,
-		department,
-		message: msg,
-		status: initialStatus || 'ready',
-		v: {
-			_id,
-			username,
-			token,
-			status,
-		},
-		t: 'l',
-		servedBy : {
-			_id : agent._id,
-			username :agent.username,
-			ts: agent.ts,
-			name: agent.name,
-		},
-		priorityWeight: LivechatPriorityWeight.NOT_SPECIFIED,
-		estimatedWaitingTimeQueue: DEFAULT_SLA_CONFIG.ESTIMATED_WAITING_TIME_QUEUE,
-
-		...extraInquiryInfo,
-	};
-
-	const result = (await LivechatInquiry.insertOne(inquiry)).insertedId;
-	logger.debug(`Inquiry ${result} created for visitor ${_id}`);
-
-	return result;
-};
 
 export const createLivechatSubscription = async (
 	rid: string,
