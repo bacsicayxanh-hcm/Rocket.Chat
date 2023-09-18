@@ -1,6 +1,7 @@
-import {check} from 'meteor/check';
+import {Match,check} from 'meteor/check';
 import {Random} from '@rocket.chat/random';
 import {LivechatRooms} from '@rocket.chat/models';
+
 import type {ILivechatAgent, IOmnichannelRoom, SelectedAgent} from '@rocket.chat/core-typings';
 import {OmnichannelSourceType} from '@rocket.chat/core-typings';
 
@@ -59,11 +60,11 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 			return API.v1.success(newRoom);
 		}
 
-		const froom = await LivechatRooms.findOneOpenByRoomIdAndVisitorToken(roomId, token, {});
-		if (!froom) {
+		const fRoom = await LivechatRooms.findOneOpenByRoomIdAndVisitorToken(roomId, token, {});
+		if (!fRoom) {
 			throw new Error('invalid-room');
 		}
 
-		return API.v1.success({ room: froom, newRoom: false });
+		return API.v1.success({ room: fRoom, newRoom: false });
 	},
 });

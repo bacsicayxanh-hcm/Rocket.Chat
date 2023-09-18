@@ -26,6 +26,9 @@ import {
 } from '@rocket.chat/models';
 import { Random } from '@rocket.chat/random';
 import { serverFetch as fetch } from '@rocket.chat/server-fetch';
+import {Match,Meteor,check} from 'meteor/check';
+
+import { Message } from '@rocket.chat/core-services';
 import moment from 'moment-timezone';
 import type { FindCursor, UpdateFilter } from 'mongodb';
 
@@ -381,8 +384,8 @@ class LivechatClass {
 		}
 
 		if (room == null) {
-			
-	
+
+
 			if (!agent && !guest.department) {
 				const department = await this.getRequiredDepartment();
 				Livechat.logger.debug(`No department or default agent selected for ${guest._id}`);
