@@ -152,11 +152,10 @@ export const QueueManager: queueManager = {
 		logger.debug(`Room for visitor ${guest._id} created with id ${room._id}`);
 
 		const inquiry = await LivechatInquiry.findOneById(
-			await createLivechatInquiryWithAgent({
+			await createLivechatInquiry({
 				rid,
 				name,
 				guest,
-				agent,
 				message,
 				extraData: { ...extraData, source: roomInfo.source },
 			}),
