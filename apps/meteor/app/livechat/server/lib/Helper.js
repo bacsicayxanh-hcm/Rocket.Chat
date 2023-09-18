@@ -103,6 +103,74 @@ export const createLivechatRoom = async (rid, name, guest, roomInfo = {}, extraD
 	return roomId;
 };
 
+export const createLivechatRoomWithAgent = async (rid, name, guest,agent, roomInfo = {}, extraData = {}) => {
+	check(rid, String);
+	check(name, String);
+	check(
+		guest,
+		Match.ObjectIncluding({
+			_id: String,
+			username: String,
+			status: Match.Maybe(String),
+			department: Match.Maybe(String),
+		}),
+	);
+
+	const extraRoomInfo = await callbacks.run('livechat.beforeRoom', roomInfo, extraData);
+	const { _id, username, token, department: departmentId, status = 'online' } = guest;
+	// const { _id, username, ts, name} = agent;
+	const newRoomAt = new Date();
+
+	logger.debug(`Creating livechat room for visitor ${_id}`);
+
+	const room = Object.assign(
+		{
+			_id: rid,
+			msgs: 0,
+			usersCount: 2,
+			lm: newRoomAt,
+			fname: name,
+			t: 'l',
+			ts: newRoomAt,
+			departmentId,
+			v: {
+				_id,
+				username,
+				token,
+				status,
+			},
+			cl: false,
+			open: true,
+			waitingResponse: true,
+			// this should be overriden by extraRoomInfo when provided
+			// in case it's not provided, we'll use this "default" type
+			source: {
+				type: OmnichannelSourceType.OTHER,
+				alias: 'unknown',
+			},
+			queuedAt: newRoomAt,
+			servedBy : {
+				_id : agent._id,
+				username :agent.username,
+				ts: agent.ts,
+				name: agent.name,
+			},
+			priorityWeight: LivechatPriorityWeight.NOT_SPECIFIED,
+			estimatedWaitingTimeQueue: DEFAULT_SLA_CONFIG.ESTIMATED_WAITING_TIME_QUEUE,
+		},
+		extraRoomInfo,
+	);
+
+	const roomId = (await Rooms.insertOne(room)).insertedId;
+
+	Apps.triggerEvent(AppEvents.IPostLivechatRoomStarted, room);
+	await callbacks.run('livechat.newRoom', room);
+
+	await sendMessage(guest, { t: 'livechat-started', msg: '', groupable: false }, room);
+
+	return roomId;
+};
+
 export const createLivechatInquiry = async ({ rid, name, guest, message, initialStatus, extraData = {} }) => {
 	check(rid, String);
 	check(name, String);
@@ -144,6 +212,65 @@ export const createLivechatInquiry = async ({ rid, name, guest, message, initial
 			status,
 		},
 		t: 'l',
+		priorityWeight: LivechatPriorityWeight.NOT_SPECIFIED,
+		estimatedWaitingTimeQueue: DEFAULT_SLA_CONFIG.ESTIMATED_WAITING_TIME_QUEUE,
+
+		...extraInquiryInfo,
+	};
+
+	const result = (await LivechatInquiry.insertOne(inquiry)).insertedId;
+	logger.debug(`Inquiry ${result} created for visitor ${_id}`);
+
+	return result;
+};
+
+export const createLivechatInquiryWithAgent = async ({ rid, name, guest,agent, message, initialStatus, extraData = {} }) => {
+	check(rid, String);
+	check(name, String);
+	check(
+		guest,
+		Match.ObjectIncluding({
+			_id: String,
+			username: String,
+			status: Match.Maybe(String),
+			department: Match.Maybe(String),
+		}),
+	);
+	check(
+		message,
+		Match.ObjectIncluding({
+			msg: String,
+		}),
+	);
+
+	const extraInquiryInfo = await callbacks.run('livechat.beforeInquiry', extraData);
+
+	const { _id, username, token, department, status = 'online' } = guest;
+	const { msg } = message;
+	const ts = new Date();
+
+	logger.debug(`Creating livechat inquiry for visitor ${_id}`);
+
+	const inquiry = {
+		rid,
+		name,
+		ts,
+		department,
+		message: msg,
+		status: initialStatus || 'ready',
+		v: {
+			_id,
+			username,
+			token,
+			status,
+		},
+		t: 'l',
+		servedBy : {
+			_id : agent._id,
+			username :agent.username,
+			ts: agent.ts,
+			name: agent.name,
+		},
 		priorityWeight: LivechatPriorityWeight.NOT_SPECIFIED,
 		estimatedWaitingTimeQueue: DEFAULT_SLA_CONFIG.ESTIMATED_WAITING_TIME_QUEUE,
 

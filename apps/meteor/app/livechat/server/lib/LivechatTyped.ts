@@ -20,6 +20,8 @@ import {
 	Users,
 	LivechatDepartmentAgents,
 } from '@rocket.chat/models';
+import {Match,Meteor,check} from 'meteor/check';
+
 import { Message } from '@rocket.chat/core-services';
 import moment from 'moment-timezone';
 import type { FindCursor, UpdateFilter } from 'mongodb';
