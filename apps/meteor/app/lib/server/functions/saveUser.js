@@ -21,7 +21,7 @@ import { AppEvents, Apps } from '../../../../ee/server/apps/orchestrator';
 import { safeGetMeteorUser } from '../../../utils/server/functions/safeGetMeteorUser';
 import { trim } from '../../../../lib/utils/stringUtils';
 
-const MAX_BIO_LENGTH = 260;
+const MAX_BIO_LENGTH = 100000;
 const MAX_NICKNAME_LENGTH = 120;
 
 let html = '';
