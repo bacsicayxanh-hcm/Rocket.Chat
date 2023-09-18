@@ -661,19 +661,10 @@ class LivechatClass {
 		}
 
 		const user = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
-		let existingUser = null;
 
 		if (user) {
 			Livechat.logger.debug('Found matching user by token');
 			userId = user._id;
-		} else if (phone?.number && (existingUser = await LivechatVisitors.findOneVisitorByPhone(phone.number))) {
-			Livechat.logger.debug('Found matching user by phone number');
-			userId = existingUser._id;
-			// Don't change token when matching by phone number, use current visitor token
-			(updateUser.$set as Mutable<UpdateUserType['$set']>).token = existingUser.token;
-		} else if (email && (existingUser = await LivechatVisitors.findOneGuestByEmailAddress(email))) {
-			Livechat.logger.debug('Found matching user by email');
-			userId = existingUser._id;
 		} else {
 			Livechat.logger.debug(`No matches found. Attempting to create new user with token ${token}`);
 			if (!username) {
