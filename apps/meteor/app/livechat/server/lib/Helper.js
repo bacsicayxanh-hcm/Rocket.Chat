@@ -127,7 +127,7 @@ export const createLivechatRoomWithAgent = async (rid, name, guest,agent, roomIn
 		{
 			_id: rid,
 			msgs: 0,
-			usersCount: 2,
+			usersCount: 1,
 			lm: newRoomAt,
 			fname: name,
 			t: 'l',
