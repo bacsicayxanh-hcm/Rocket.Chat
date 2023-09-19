@@ -6,7 +6,7 @@ import type {ILivechatAgent, IOmnichannelRoom, SelectedAgent} from '@rocket.chat
 import {OmnichannelSourceType} from '@rocket.chat/core-typings';
 
 import {API} from '../../../../api/server';
-import {findAgent, findGuest, getRoomWithoutCheckOnlineAgent, onCheckRoomParams} from '../lib/livechat';
+import {findAgent, findGuest, getRoom, getRoomWithoutCheckOnlineAgent, onCheckRoomParams} from '../lib/livechat';
 import {isWidget} from '../../../../api/server/helpers/isWidget';
 
 const isAgentWithInfo = (agentObj: ILivechatAgent | { hiddenInfo: true }): agentObj is ILivechatAgent => !('hiddenInfo' in agentObj);
@@ -55,8 +55,13 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 					type: isWidget(this.request.headers) ? OmnichannelSourceType.WIDGET : OmnichannelSourceType.API,
 				},
 			};
-			
-			const newRoom = await getRoomWithoutCheckOnlineAgent({ guest, rid, agent, roomInfo, extraParams });
+
+			let newRoom : IOmnichannelRoom | undefined;
+			if (agent) {
+				newRoom = await getRoom({ guest, rid, agent, roomInfo, extraParams });
+			} else { 
+				newRoom = await getRoomWithoutCheckOnlineAgent({ guest, rid, agent, roomInfo, extraParams });
+			}
 			return API.v1.success(newRoom);
 		}
 
