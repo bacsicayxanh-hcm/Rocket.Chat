@@ -321,8 +321,12 @@ export class NotificationsModule {
 		});
 		this.streamUser.allowRead(async function (eventName) {
 			const [userId, e] = eventName.split('/');
+            SystemLogger.info(
+                `StreamUser allow read log: eventName:${eventName}, userid:${userId}, e: ${e}`,
+            );
 
             if (e === 'rooms-changed') {
+                SystemLogger.info("Rooms changed true")
                 return true;
             }
 			if (e === 'otr') {
