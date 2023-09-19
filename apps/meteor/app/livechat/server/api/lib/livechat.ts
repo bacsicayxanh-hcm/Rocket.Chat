@@ -139,7 +139,7 @@ export function getRoomWithoutCheckOnlineAgent({
 	roomInfo: {
 		source?: IOmnichannelRoom['source'];
 	};
-	agent?: SelectedAgent;
+	agent: SelectedAgent;
 	extraParams?: Record<string, any>;
 }): Promise<{ room: IOmnichannelRoom; newRoom: boolean }> {
 	const token = guest?.token;
