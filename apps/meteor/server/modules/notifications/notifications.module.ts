@@ -322,6 +322,9 @@ export class NotificationsModule {
 		this.streamUser.allowRead(async function (eventName) {
 			const [userId, e] = eventName.split('/');
 
+            if (e === 'rooms-changed') {
+                return true;
+            }
 			if (e === 'otr') {
 				const isEnable = await Settings.getValueById('OTR_Enable');
 				return Boolean(this.userId) && this.userId === userId && (isEnable === 'true' || isEnable === true);
