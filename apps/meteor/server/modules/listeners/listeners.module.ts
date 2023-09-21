@@ -278,8 +278,15 @@ export class ListenersModule {
 		service.onEvent('watch.rooms', ({ clientAction, room }): void => {
 			// this emit will cause the user to receive a 'rooms-changed' event
 			notifications.streamUser.__emit(room._id, clientAction, room);
-
+			
 			notifications.streamRoomData.emitWithoutBroadcast(room._id, room as IOmnichannelRoom);
+			notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })
+			// notifications.notifyUserInThisInstance(room, 'userData', {
+			// 	id: event.id,
+			// 	diff: event.diff,
+			// 	unset: event.unset,
+			// 	type: 'updated',
+			// });
 		});
 
 		service.onEvent('watch.users', (event): void => {
