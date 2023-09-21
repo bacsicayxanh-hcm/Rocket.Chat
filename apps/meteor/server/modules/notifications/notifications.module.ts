@@ -7,6 +7,9 @@ import type { StreamerCallbackArgs, StreamKeys, StreamNames } from '@rocket.chat
 import { emit, StreamPresence } from '../../../app/notifications/server/lib/Presence';
 import { SystemLogger } from '../../lib/logger/system';
 import type { Progress } from '../../../app/importer/server/classes/ImporterProgress';
+import {Logger} from "/server/lib/logger/Logger";
+
+const notificationsLogger = new Logger('Notifications');
 
 export class NotificationsModule {
 	public readonly streamLogged: IStreamer<'notify-logged'>;
@@ -321,12 +324,12 @@ export class NotificationsModule {
 		});
 		this.streamUser.allowRead(async function (eventName) {
 			const [userId, e] = eventName.split('/');
-            SystemLogger.info(
+            notificationsLogger.info(
                 `StreamUser allow read log: eventName:${eventName}, userid:${userId}, e: ${e}`,
             );
 
             if (e === 'rooms-changed') {
-                SystemLogger.info("Rooms changed true")
+                notificationsLogger.info("Rooms changed true")
                 return true;
             }
 			 if (e === 'message') {
@@ -341,7 +344,7 @@ export class NotificationsModule {
                 SystemLogger.info("subscriptions-changed true")
                 return true;
             }
-			
+
 			if (e === 'otr') {
 				const isEnable = await Settings.getValueById('OTR_Enable');
 				return Boolean(this.userId) && this.userId === userId && (isEnable === 'true' || isEnable === true);
