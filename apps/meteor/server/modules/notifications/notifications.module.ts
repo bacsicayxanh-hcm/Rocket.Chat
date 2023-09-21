@@ -7,6 +7,10 @@ import type { IStreamer, IStreamerConstructor, IPublication } from 'meteor/rocke
 import type { Progress } from '../../../app/importer/server/classes/ImporterProgress';
 import { emit, StreamPresence } from '../../../app/notifications/server/lib/Presence';
 import { SystemLogger } from '../../lib/logger/system';
+import type { Progress } from '../../../app/importer/server/classes/ImporterProgress';
+import {Logger} from "/server/lib/logger/Logger";
+
+const notificationsLogger = new Logger('Notifications');
 
 export class NotificationsModule {
 	public readonly streamLogged: IStreamer<'notify-logged'>;
@@ -321,12 +325,12 @@ export class NotificationsModule {
 		});
 		this.streamUser.allowRead(async function (eventName) {
 			const [userId, e] = eventName.split('/');
-            SystemLogger.info(
+            notificationsLogger.info(
                 `StreamUser allow read log: eventName:${eventName}, userid:${userId}, e: ${e}`,
             );
 
             if (e === 'rooms-changed') {
-                SystemLogger.info("Rooms changed true")
+                notificationsLogger.info("Rooms changed true")
                 return true;
             }
 			 if (e === 'message') {
@@ -341,7 +345,7 @@ export class NotificationsModule {
                 SystemLogger.info("subscriptions-changed true")
                 return true;
             }
-			
+
 			if (e === 'otr') {
 				const isEnable = await Settings.getValueById('OTR_Enable');
 				return Boolean(this.userId) && this.userId === userId && (isEnable === 'true' || isEnable === true);
@@ -501,9 +505,9 @@ export class NotificationsModule {
 		this.streamPresence.allowWrite('none');
 	}
 
-	// notifyAll<E extends StreamKeys<'notify-all'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-all', E>): void {
-	// 	return this.streamAll.emit(eventName, ...args);
-	// }
+	notifyAll<E extends StreamKeys<'notify-all'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-all', E>): void {
+		return this.streamAll.emit(eventName, ...args);
+	}
 
 	notifyLogged<E extends StreamKeys<'notify-logged'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-logged', E>): void {
 		return this.streamLogged.emit(eventName, ...args);
