@@ -9,7 +9,7 @@ import { methodDeprecationLogger } from '../../../lib/server/lib/deprecationWarn
 declare module '@rocket.chat/ui-contexts' {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	interface ServerMethods {
-		'livechat:loadHistory'(params: { token: string; rid: string; end?: String; limit?: number; ls: String}):
+		'livechat:loadHistory'(params: { token: string; rid: string; end?: string; limit?: number; ls: string}):
 			| {
 				messages: IMessage[];
 				firstUnread: any;
@@ -23,7 +23,7 @@ Meteor.methods<ServerMethods>({
 	async 'livechat:loadHistory'({ token, rid, end, limit = 20, ls }) {
 		methodDeprecationLogger.method('livechat:loadHistory', '7.0.0');
 
-		if (!token || typeof token !== 'string') {
+		if (!token) {
 			throw new Meteor.Error('invalid-token', 'Invalid Token', {
 				method: 'livechat:loadHistory',
 			  });
