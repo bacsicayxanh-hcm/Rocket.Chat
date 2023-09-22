@@ -348,7 +348,7 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 
 		const names = new Map();
 		(
-			await Users.findUsersByUsernames([room.servedBy.user], {
+			await Users.findUsersByUsernames([room.servedBy.username], {
 				projection: {
 					username: 1,
 					name: 1,
@@ -357,6 +357,7 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		).forEach((user) => {
 			names.set(user.username, user.name);
 		});
+
 		// const names = Users.findUsersByUsernames([room.servedBy.user])
 		room.servedBy.name = getNameOfUsername(names, room.servedBy.username);
 
