@@ -82,6 +82,7 @@ export const roomFields = {
 	joinCodeRequired: 1,
 	open: 1,
 	label: 1,
+	unread:1,
 	ro: 1,
 	reactWhenReadOnly: 1,
 	sysMes: 1,

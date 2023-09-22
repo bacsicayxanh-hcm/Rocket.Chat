@@ -64,6 +64,11 @@ export function isWatcherRunning(): boolean {
 	return watcherStarted;
 }
 
+
+function getNameOfUsername(users: Map<string, string>, username: string): string {
+	return users.get(username) || username;
+}
+
 export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallback): void {
 	const getSettingCached = mem(async (setting: string): Promise<SettingValue> => Settings.getValueById(setting), { maxAge: 10000 });
 
@@ -335,10 +340,25 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 			return;
 		}
 
-		const room = data ?? (await Rooms.findOneById(id, { projection: roomFields }));
+		var room = data ?? (await Rooms.findOneById(id, { projection: roomFields }));
+		
 		if (!room) {
 			return;
 		}
+
+		const names = new Map();
+		(
+			await Users.findUsersByUsernames([room.servedBy.user], {
+				projection: {
+					username: 1,
+					name: 1,
+				},
+			}).toArray()
+		).forEach((user) => {
+			names.set(user.username, user.name);
+		});
+		// const names = Users.findUsersByUsernames([room.servedBy.user])
+		room.servedBy.name = getNameOfUsername(names, room.servedBy.username);
 
 		void broadcast('watch.rooms', { clientAction, room });
 	});
