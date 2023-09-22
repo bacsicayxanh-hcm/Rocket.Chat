@@ -1590,6 +1590,10 @@ const GETLivechatConfigParamsSchema = {
 			type: 'string',
 			nullable: true,
 		},
+		sort: {
+			type: 'string',
+			nullable: true,
+		},
 	},
 	additionalProperties: false,
 };

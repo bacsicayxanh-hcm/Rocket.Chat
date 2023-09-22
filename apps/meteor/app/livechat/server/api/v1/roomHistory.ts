@@ -24,8 +24,11 @@ API.v1.addRoute(
 			}
 
 			const { token } = this.queryParams;
+			const { sort, fields } = await this.parseJsonQuery();			
 			const options = {
-				projection: {
+					sort,
+					fields,
+					projection: {
 					departmentId: 1,
 					servedBy: 1,
 					open: 1,
