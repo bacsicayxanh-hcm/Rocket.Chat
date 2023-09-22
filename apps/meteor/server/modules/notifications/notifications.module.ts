@@ -332,18 +332,18 @@ export class NotificationsModule {
                 notificationsLogger.info("Rooms changed true")
                 return true;
             }
-			 if (e === 'message') {
-                SystemLogger.info("message true")
-                return true;
-            }
-			 if (e === 'notification') {
-                SystemLogger.info("notification true")
-                return true;
-            }
-			if (e === 'subscriptions-changed') {
-                SystemLogger.info("subscriptions-changed true")
-                return true;
-            }
+			//  if (e === 'message') {
+            //     SystemLogger.info("message true")
+            //     return true;
+            // }
+			//  if (e === 'notification') {
+            //     SystemLogger.info("notification true")
+            //     return true;
+            // }
+			// if (e === 'subscriptions-changed') {
+            //     SystemLogger.info("subscriptions-changed true")
+            //     return true;
+            // }
 
 			if (e === 'otr') {
 				const isEnable = await Settings.getValueById('OTR_Enable');

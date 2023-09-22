@@ -281,6 +281,17 @@ export class ListenersModule {
 			
 			notifications.streamRoomData.emitWithoutBroadcast(room._id, room as IOmnichannelRoom);
 			notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })
+			// switch (clientAction) {
+			// 	case 'updated':
+			// 		notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })
+			// 		break;
+			// 	case 'inserted':
+			// 		notifications.notifyUserInThisInstance(event.id, 'userData', { id: event.id, data: event.data, type: 'inserted' });
+			// 		break;
+			// 	case 'removed':
+			// 		notifications.notifyUserInThisInstance(event.id, 'userData', { id: event.id, type: 'removed' });
+			// 		break;
+			// }	
 			// notifications.notifyUserInThisInstance(room, 'userData', {
 			// 	id: event.id,
 			// 	diff: event.diff,
