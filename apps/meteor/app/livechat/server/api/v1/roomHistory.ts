@@ -41,7 +41,7 @@ API.v1.addRoute(
 
 			// const extraQuery = await callbacks.run('livechat.applyRoomRestrictions', {});
 			//  var rooms : IOmnichannelRoom[] = await LivechatRooms.findOpenByVisitorToken(token, options, extraQuery).toArray();
-			var rooms : IOmnichannelRoom[] = await LivechatRooms.findRoomOpenByVisitorToken(token, options).toArray();
+			var rooms : IOmnichannelRoom[] = await LivechatRooms.findRoomsOpenByVisitorToken(token, options).toArray();
 			const usernames: Set<string> = new Set();
 			rooms.forEach((room) => {
 				if (!room.servedBy.username) {
