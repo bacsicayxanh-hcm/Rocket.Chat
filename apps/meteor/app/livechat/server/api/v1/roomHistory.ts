@@ -33,14 +33,15 @@ API.v1.addRoute(
 					servedBy: 1,
 					open: 1,
 					callStatus: 1,
-					unread: 1,
                     lastMessage: 1,
+					unread: 1,
 					unreadNotLoaded:1,
 				},
 			};
 
-			const extraQuery = await callbacks.run('livechat.applyRoomRestrictions', {});
-			 var rooms : IOmnichannelRoom[] = await LivechatRooms.findOpenByVisitorToken(token, options, extraQuery).toArray();
+			// const extraQuery = await callbacks.run('livechat.applyRoomRestrictions', {});
+			//  var rooms : IOmnichannelRoom[] = await LivechatRooms.findOpenByVisitorToken(token, options, extraQuery).toArray();
+			var rooms : IOmnichannelRoom[] = await LivechatRooms.findRoomOpenByVisitorToken(token, options).toArray();
 			const usernames: Set<string> = new Set();
 			rooms.forEach((room) => {
 				if (!room.servedBy.username) {
