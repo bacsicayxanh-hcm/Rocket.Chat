@@ -1876,7 +1876,7 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 	}
 
 	findOpenByVisitorToken(visitorToken: string, options: FindOptions<IOmnichannelRoom> = {}, extraQuery: Filter<IOmnichannelRoom> = {}) {
-		const query: Filter<IOmnichannelRoom> = {
+		const query = {
 			't': 'l',
 			'open': true,
 			'v.token': visitorToken,
@@ -1885,6 +1885,16 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 
 		return this.find(query, options);
 	}
+	findRoomsOpenByVisitorToken(visitorToken: string, options?: FindOptions<IOmnichannelRoom>): FindCursor<IOmnichannelRoom> {
+		const query = {
+			't': 'l',
+			'open': true,
+			'v.token': visitorToken,
+		};
+		return this.find(query, options);
+	}
+
+
 
 	findOneOpenByVisitorToken(visitorToken: string, options: FindOptions<IOmnichannelRoom> = {}) {
 		const query: Filter<IOmnichannelRoom> = {
