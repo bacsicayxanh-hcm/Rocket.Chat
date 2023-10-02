@@ -13,7 +13,7 @@ import { API } from '../api';
 API.v1.addRoute(
 	'subscriptions.get',
 	{
-		authRequired: true,
+		authRequired: false,
 		validateParams: isSubscriptionsGetProps,
 	},
 	{
