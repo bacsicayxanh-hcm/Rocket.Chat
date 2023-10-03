@@ -177,7 +177,7 @@ jobs:
           tar czf /tmp/Rocket.Chat.tar.gz bundle
 
       - name: Store build
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.1
         with:
           name: build
           path: /tmp/Rocket.Chat.tar.gz
@@ -198,7 +198,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASS }}
 
       - name: Restore build
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v3.1.1
         with:
           name: build
           path: /tmp/build
