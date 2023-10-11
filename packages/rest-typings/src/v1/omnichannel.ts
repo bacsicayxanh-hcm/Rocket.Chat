@@ -3567,6 +3567,9 @@ export type OmnichannelEndpoints = {
 	'/v1/livechat/room': {
 		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
 	};
+	'/v1/livechat/room.openOrCreate': {
+		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
+	};
 	'/v1/livechat/room.close': {
 		POST: (params: POSTLivechatRoomCloseParams) => { rid: string; comment: string };
 	};

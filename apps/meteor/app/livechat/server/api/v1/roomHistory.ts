@@ -6,8 +6,6 @@ import {IOmnichannelRoom} from '@rocket.chat/core-typings';
 import { API } from '../../../../api/server';
 import { Livechat } from '../../lib/LivechatTyped';
 
-import { callbacks } from '../../../../../lib/callbacks';
-
 function getNameOfUsername(users: Map<string, string>, username: string): string {
 	return users.get(username) || username;
 }
@@ -41,10 +39,10 @@ API.v1.addRoute(
 
 			// const extraQuery = await callbacks.run('livechat.applyRoomRestrictions', {});
 			//  var rooms : IOmnichannelRoom[] = await LivechatRooms.findOpenByVisitorToken(token, options, extraQuery).toArray();
-			var rooms : IOmnichannelRoom[] = await LivechatRooms.findRoomsOpenByVisitorToken(token, options).toArray();
+			var rooms : IOmnichannelRoom[] = await LivechatRooms.findOpenByVisitorToken(token, options).toArray();
 			const usernames: Set<string> = new Set();
 			rooms.forEach((room) => {
-				if (!room.servedBy.username) {
+				if (!(room.servedBy?.username)) {
 					return;
 				}
 				usernames.add(room.servedBy.username);
@@ -65,7 +63,7 @@ API.v1.addRoute(
 				if (!room.servedBy) {
 					return;
 				}
-				room.servedBy.name = getNameOfUsername(names, room.servedBy.username);
+				room.servedBy.name = getNameOfUsername(names, room.servedBy.username!);
 			});
 
 			return API.v1.success({

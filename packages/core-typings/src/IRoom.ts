@@ -49,6 +49,8 @@ export interface IRoom extends IRocketChatRecord {
 	webRtcCallStartTime?: Date;
 	servedBy?: {
 		_id: string;
+		username: IUser['username'];
+		name: IUser['name'];
 	};
 
 	streamingOptions?: {
