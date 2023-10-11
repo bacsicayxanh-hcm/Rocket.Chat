@@ -7,7 +7,7 @@ import {LivechatRooms} from '@rocket.chat/models';
 API.v1.addRoute(
     'livechat/room.read',
     {
-        async get() {
+        async post() {
             const extraCheckParams = await onCheckRoomParams({
                 token: String,
                 rid: Match.Maybe(String),
