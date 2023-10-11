@@ -65,8 +65,8 @@ export function isWatcherRunning(): boolean {
 }
 
 
-function getNameOfUsername(users: Map<string, string>, username: string): string {
-	return users.get(username) || username;
+function getNameOfId(users: Map<string, string>, id: string): string {
+	return users.get(id) || id;
 }
 
 export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallback): void {
@@ -331,8 +331,13 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 	});
 
 	watcher.on<IRoom>(Rooms.getCollectionName(), async ({ clientAction, id, data, diff }) => {
+		var room = await Rooms.findOneById(id, { projection: roomFields });
+		if (!room) { 
+			return;
+		}
+
 		if (clientAction === 'removed') {
-			void broadcast('watch.rooms', { clientAction, room: { _id: id } });
+			void broadcast('watch.rooms', { clientAction, room: room });
 			return;
 		}
 
@@ -340,26 +345,25 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 			return;
 		}
 
-		var room = data ?? (await Rooms.findOneById(id, { projection: roomFields }));
 		
-		if (!room) {
-			return;
-		}
+		
 
 		const names = new Map();
 		(
-			await Users.findUsersByUsernames([room.servedBy.username], {
+			await Users.findUsersByIds([room.servedBy!._id], {
 				projection: {
-					username: 1,
+					_id: 1,
 					name: 1,
 				},
 			}).toArray()
 		).forEach((user) => {
-			names.set(user.username, user.name);
+			names.set(user._id, user.name);
 		});
 
 		// const names = Users.findUsersByUsernames([room.servedBy.user])
-		room.servedBy.name = getNameOfUsername(names, room.servedBy.username);
+		if (room.servedBy) {
+			room.servedBy.name = getNameOfId(names, room.servedBy._id);
+		  }
 
 		void broadcast('watch.rooms', { clientAction, room });
 	});
