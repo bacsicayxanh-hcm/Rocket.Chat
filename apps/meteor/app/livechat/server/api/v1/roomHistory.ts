@@ -27,6 +27,7 @@ API.v1.addRoute(
 					sort,
 					fields,
 					projection: {
+						v:1,
 					departmentId: 1,
 					servedBy: 1,
 					open: 1,
