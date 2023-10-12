@@ -86,7 +86,7 @@ jobs:
   build:
     name: 📦 Build
     needs: [release-versions]
-    runs-on: ubuntu-latest,self-hosted
+    runs-on: [ubuntu-latest,self-hosted]
 
     steps:
       - uses: actions/checkout@v3
@@ -184,7 +184,7 @@ jobs:
 
   build-docker-preview:
     name: 🚢 Build Docker Image (preview)
-    runs-on: ubuntu-latest,self-hosted
+    runs-on: [ubuntu-latest,self-hosted]
     needs: [build, release-versions]
     if: github.event_name == 'release' || github.ref == 'refs/heads/master'
     steps:
