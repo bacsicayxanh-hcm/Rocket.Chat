@@ -1,24 +1,29 @@
-
-import {findGuest, onCheckRoomParams} from '../lib/livechat';
+import {findGuest} from '../lib/livechat';
 import { API } from '../../../../api/server';
 import {LivechatRooms} from '@rocket.chat/models';
 
 
 API.v1.addRoute(
-    'livechat/room.read',
-    {
+    'livechat/room.read',{
         async post() {
-            const extraCheckParams = await onCheckRoomParams({
-                token: String,
-                rid: Match.Maybe(String),
-                ls: Match.Maybe(Date),
-            });
-
-            check(this.queryParams, extraCheckParams as any);
-
-            const { token, rid: roomId ,ls: ls} = this.queryParams;
-
-
+            if (!this.bodyParams || typeof this.bodyParams !== 'object') {
+                throw new Error('Invalid or missing this.bodyParams');
+            }
+            
+            const { token, rid: roomId, ls } = this.bodyParams;
+            
+            if (!token || typeof token !== 'string' || !token.trim()) {
+                throw new Error('Invalid or missing token');
+            }
+            
+            if (!roomId || typeof roomId !== 'string' || !roomId.trim()) {
+                throw new Error('Invalid or missing rid');
+            }
+            
+            if (!(ls instanceof Date)) {
+                throw new Error('Invalid or missing ls');
+            }
+    
             const guest = token && (await findGuest(token));
             if (!guest) {
                 throw new Error('invalid-token');
