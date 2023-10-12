@@ -1,15 +1,13 @@
 import {findGuest} from '../lib/livechat';
 import { API } from '../../../../api/server';
 import {LivechatRooms} from '@rocket.chat/models';
-
 import {
-	isPOSTLivechatRoomReadParams,
+	isPOSTLivechatReadRoomMessageParamsSchema,
 } from '@rocket.chat/rest-typings';
 
-
 API.v1.addRoute(
-    'livechat/readMessageRoom',
-    { validateParams: isPOSTLivechatRoomReadParams },
+    'livechat/readRoomMessage',
+    { validateParams: isPOSTLivechatReadRoomMessageParamsSchema },
     {
         async post() {
             const { token, rid,ls } = this.bodyParams;
@@ -26,7 +24,7 @@ API.v1.addRoute(
             }
             await LivechatRooms.setVisitorLastSeenByRoomId(rid, ls);
 
-            return API.v1.success();
+            return API.v1.success({ rid });
         },
     }
 );

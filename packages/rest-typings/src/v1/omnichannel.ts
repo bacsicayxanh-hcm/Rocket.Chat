@@ -2087,13 +2087,13 @@ const POSTLivechatRoomCloseParamsSchema = {
 
 export const isPOSTLivechatRoomCloseParams = ajv.compile<POSTLivechatRoomCloseParams>(POSTLivechatRoomCloseParamsSchema);
 
-type POSTLivechatRoomReadParams = {
+type POSTLivechatReadRoomMessageParams = {
 	token: string;
 	rid: string;
 	ls:Date;
 };
 
-const POSTLivechatRoomReadParamsSchema = {
+const POSTLivechatReadRoomMessageParamsSchema = {
 	type: 'object',
 	properties: {
 		token: {
@@ -2103,13 +2103,13 @@ const POSTLivechatRoomReadParamsSchema = {
 			type: 'string',
 		},
 		ls: {
-			type: 'Date',
+			type: 'string',
 		},
 	},
 	required: ['token', 'rid', 'ls'],
 	additionalProperties: false,
 }
-export const isPOSTLivechatRoomReadParams = ajv.compile<POSTLivechatRoomReadParams>(POSTLivechatRoomReadParamsSchema);
+export const isPOSTLivechatReadRoomMessageParams = ajv.compile<POSTLivechatReadRoomMessageParams>(POSTLivechatReadRoomMessageParamsSchema);
 
 type POSTLivechatRoomCloseByUserParams = {
 	rid: string;
@@ -3346,6 +3346,9 @@ export type OmnichannelEndpoints = {
 	};
 	'/v1/livechat/room.close': {
 		POST: (params: POSTLivechatRoomCloseParams) => { rid: string; comment: string };
+	};
+	'/v1/livechat/readRoomMessage': {
+		POST: (params: POSTLivechatReadRoomMessageParams) => {token: string; rid: string; ls: Date };
 	};
 	'/v1/livechat/room.closeByUser': {
 		POST: (params: POSTLivechatRoomCloseByUserParams) => void;
