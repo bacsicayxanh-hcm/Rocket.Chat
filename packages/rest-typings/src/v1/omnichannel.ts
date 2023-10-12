@@ -1862,29 +1862,7 @@ const POSTLivechatMessageParamsSchema = {
 
 export const isPOSTLivechatMessageParams = ajv.compile<POSTLivechatMessageParams>(POSTLivechatMessageParamsSchema);
 
-type POSTLivechatRoomReadParams = {
-	token: string;
-	rid: string;
-	ls:Date;
-};
 
-const POSTLivechatRoomReadParamsSchema = {
-	type: 'object',
-	properties: {
-		token: {
-			type: 'string',
-		},
-		rid: {
-			type: 'string',
-		},
-		ls: {
-			type: 'Date',
-		},
-	},
-	required: ['token', 'rid', 'ls'],
-	additionalProperties: false,
-}
-export const isPOSTLivechatRoomReadParams = ajv.compile<POSTLivechatRoomReadParams>(POSTLivechatRoomReadParamsSchema);
 
 
 type GETLivechatMessageIdParams = {
@@ -2108,6 +2086,30 @@ const POSTLivechatRoomCloseParamsSchema = {
 };
 
 export const isPOSTLivechatRoomCloseParams = ajv.compile<POSTLivechatRoomCloseParams>(POSTLivechatRoomCloseParamsSchema);
+
+type POSTLivechatRoomReadParams = {
+	token: string;
+	rid: string;
+	ls:Date;
+};
+
+const POSTLivechatRoomReadParamsSchema = {
+	type: 'object',
+	properties: {
+		token: {
+			type: 'string',
+		},
+		rid: {
+			type: 'string',
+		},
+		ls: {
+			type: 'Date',
+		},
+	},
+	required: ['token', 'rid', 'ls'],
+	additionalProperties: false,
+}
+export const isPOSTLivechatRoomReadParams = ajv.compile<POSTLivechatRoomReadParams>(POSTLivechatRoomReadParamsSchema);
 
 type POSTLivechatRoomCloseByUserParams = {
 	rid: string;
