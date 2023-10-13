@@ -2286,16 +2286,17 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		return this.find(query);
 	}
 
-	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string; ts?: Date }) {
+	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string;name?: string; ts?: Date }) {
 		const query: Filter<IOmnichannelRoom> = {
 			_id: roomId,
 			t: 'l',
 		};
-		const update = {
+		const update:UpdateFilter<IOmnichannelRoom> = {
 			$set: {
 				servedBy: {
 					_id: newAgent.agentId,
 					username: newAgent.username,
+					name: newAgent.name,
 					ts: newAgent.ts || new Date(), 
 				},
 			},
