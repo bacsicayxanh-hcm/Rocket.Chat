@@ -49,8 +49,6 @@ export interface IRoom extends IRocketChatRecord {
 	webRtcCallStartTime?: Date;
 	servedBy?: {
 		_id: string;
-		username: IUser['username'];
-		name: IUser['name'];
 	};
 
 	streamingOptions?: {
@@ -185,7 +183,6 @@ export interface IOmnichannelGenericRoom extends Omit<IRoom, 'default' | 'featur
 		ts: Date;
 		username: IUser['username'];
 		name: IUser['name'];
-		avatarUrl: IUser['avatarUrl'];
 	};
 	onHold?: boolean;
 	departmentId?: string;

@@ -29,7 +29,6 @@ import type {
 
 import { getValue } from '../../../app/settings/server/raw';
 import { readSecondaryPreferred } from '../../database/readSecondaryPreferred';
-import { BaseRaw } from './BaseRaw';
 
 /**
  * @extends BaseRaw<ILivechatRoom>
@@ -2284,15 +2283,10 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 				servedBy: {
 					_id: newAgent.agentId,
 					username: newAgent.username,
-					ts: new Date(),
+					ts: newAgent.ts || new Date(), 
 				},
 			},
 		};
-
-		if (newAgent.ts) {
-			update.$set.servedBy.ts = newAgent.ts;
-		}
-
 		return this.updateOne(query, update);
 	}
 
