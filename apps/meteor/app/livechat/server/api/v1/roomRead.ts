@@ -2,12 +2,12 @@ import {findGuest} from '../lib/livechat';
 import { API } from '../../../../api/server';
 import {LivechatRooms} from '@rocket.chat/models';
 import {
-	isPOSTLivechatReadRoomMessageParamsSchema,
+	isPOSTLivechatReadRoomMessageParams,
 } from '@rocket.chat/rest-typings';
 
 API.v1.addRoute(
     'livechat/readRoomMessage',
-    { validateParams: isPOSTLivechatReadRoomMessageParamsSchema },
+    { validateParams: isPOSTLivechatReadRoomMessageParams },
     {
         async post() {
             const { token, rid,ls } = this.bodyParams;
