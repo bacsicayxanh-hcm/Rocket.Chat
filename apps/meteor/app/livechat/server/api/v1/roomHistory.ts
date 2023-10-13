@@ -35,6 +35,7 @@ API.v1.addRoute(
                     lastMessage: 1,
 					unread: 1,
 					unreadNotLoaded:1,
+					metrics: 1
 				},
 			};
 
