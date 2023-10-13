@@ -35,6 +35,7 @@ import {
 	PbxEvents,
 	Permissions,
 	LivechatPriority,
+	LiveChatRooms,
 } from '@rocket.chat/models';
 import type { EventSignatures } from '@rocket.chat/core-services';
 
@@ -331,7 +332,31 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 	});
 
 	watcher.on<IRoom>(Rooms.getCollectionName(), async ({ clientAction, id, data, diff }) => {
-		var room = await Rooms.findOneById(id, { projection: roomFields });
+
+		// Check if there is a change and only `_updatedAt` field is modified
+		if (diff && Object.keys(diff).length === 1 && diff._updatedAt) {
+			// avoid useless changes
+			return;
+		}
+
+		var projection =  {
+			_id: 1,
+			v:1,
+			departmentId: 1,
+			servedBy: 1,
+			open: 1,
+			lastMessage: 1,
+			unread: 1,
+			unreadNotLoaded:1,
+
+
+			name: 1,
+			fname: 1,
+			t: 1,
+			lm: 1,		
+			// @TODO create an API to register this fields based on room type
+		}
+		var room = await LiveChatRooms.findOneById(id, { projection: projection });
 		if (!room) { 
 			return;
 		}
@@ -346,8 +371,6 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		}
 
 		
-		
-
 		const names = new Map();
 		(
 			await Users.findUsersByIds([room.servedBy!._id], {

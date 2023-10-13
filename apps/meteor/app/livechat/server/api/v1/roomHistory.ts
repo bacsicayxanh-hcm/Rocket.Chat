@@ -27,15 +27,17 @@ API.v1.addRoute(
 					sort,
 					fields,
 					projection: {
-						v:1,
+					_id: 1,
+					v:1,
 					departmentId: 1,
 					servedBy: 1,
 					open: 1,
-					callStatus: 1,
                     lastMessage: 1,
 					unread: 1,
 					unreadNotLoaded:1,
-					metrics: 1
+					msgs: 1,
+					t: 1,
+					lm: 1,	
 				},
 			};
 
