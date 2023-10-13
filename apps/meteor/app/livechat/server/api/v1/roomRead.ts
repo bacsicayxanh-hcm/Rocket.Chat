@@ -22,7 +22,8 @@ API.v1.addRoute(
             if (!fRoom) {
                 throw new Error('invalid-room');
             }
-            await LivechatRooms.setVisitorLastSeenByRoomId(rid, ls);
+            var lastSeen : Date= new Date(ls); 
+            await LivechatRooms.setVisitorLastSeenByRoomId(rid, lastSeen);
 
             return API.v1.success({ rid });
         },

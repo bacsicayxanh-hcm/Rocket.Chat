@@ -2112,7 +2112,7 @@ export const isPOSTLivechatRoomCloseParams = ajv.compile<POSTLivechatRoomClosePa
 type POSTLivechatReadRoomMessageParams = {
 	token: string;
 	rid: string;
-	ls: Date;
+	ls: string;
 };
 
 const POSTLivechatReadRoomMessageParamsSchema = {
@@ -2125,7 +2125,7 @@ const POSTLivechatReadRoomMessageParamsSchema = {
 			type: 'string',
 		},
 		ls: {
-			type: 'Date',
+			type: 'string',
 		},
 	},
 	required: ['token', 'rid', 'ls'],
