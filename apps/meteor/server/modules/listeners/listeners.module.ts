@@ -149,6 +149,8 @@ export class ListenersModule {
 
 			notifications.notifyLoggedInThisInstance('user-status', [_id, username, statusChanged, statusText, name, roles]);
 
+
+			// notifications.streamLogged.emitWithoutBroadcast("user-status",[_id, username, statusChanged, statusText, name, roles]);
 			if (_id) {
 				notifications.sendPresence(_id, username, statusChanged, statusText);
 			}
@@ -280,7 +282,7 @@ export class ListenersModule {
 			notifications.streamUser.__emit(room._id, clientAction, room);
 			
 			notifications.streamRoomData.emitWithoutBroadcast(room._id, room as IOmnichannelRoom);
-			notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`,clientAction,   room as IRoom,)
+			notifications.streamUser.emitWithoutBroadcast(`${room.u._id}/rooms-changed`,clientAction,   room as IRoom,)
 			// switch (clientAction) {
 			// 	case 'updated':
 			// 		notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })

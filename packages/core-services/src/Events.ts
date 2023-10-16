@@ -14,7 +14,7 @@ import type {
 	INotificationDesktop,
 	IPbxEvent,
 	IRole,
-	IRoom,
+	IRoom,IOmnichannelRoom,
 	ISetting,
 	ISocketConnection,
 	ISubscription,
@@ -131,7 +131,7 @@ export type EventSignatures = {
 					};
 			  },
 	): void;
-	'watch.rooms'(data: { clientAction: ClientAction; room: IRoom }): void;
+	'watch.rooms'(data: { clientAction: ClientAction; room: IOmnichannelRoom }): void;
 	'watch.subscriptions'(
 		data:
 			| {

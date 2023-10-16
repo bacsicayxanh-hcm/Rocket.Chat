@@ -158,6 +158,9 @@ export class NotificationsModule {
 				'manage-selected-settings',
 			]);
 		});
+		this.streamLogged.allowRead('user-status', async function () {
+			return true
+		});
 
 		this.streamLogged.allowWrite('none');
 		this.streamLogged.allowRead('logged');
