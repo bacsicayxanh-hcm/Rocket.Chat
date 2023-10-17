@@ -2399,6 +2399,7 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		const update = {
 			$set: {
 				'v.ls': lastSeen,
+				unread: 0,
 			},
 		};
 

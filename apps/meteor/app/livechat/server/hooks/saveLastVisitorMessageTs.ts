@@ -13,6 +13,7 @@ callbacks.add(
 			return message;
 		}
 		if (message.token) {
+			await LivechatRooms.setVisitorLastSeenByRoomId(room._id,new Date());
 			await LivechatRooms.setVisitorLastMessageTimestampByRoomId(room._id, message.ts);
 		}
 		return message;
