@@ -175,7 +175,7 @@ jobs:
         id: build-docker-image-preview
         uses: ./.github/actions/build-docker-image-vng
         with:
-          root-dir: /tmp/build
+          root-dir: /tmp/dist
           docker-tag: ${{ needs.release-versions.outputs.gh-docker-tag }}
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASS }}
