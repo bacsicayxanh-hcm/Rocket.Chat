@@ -16,7 +16,8 @@ callbacks.add(
 			return message;
 		}
 
-		await LivechatRooms.setVisitorLastMessageTimestampByRoomId(room._id, message.ts);
+        await LivechatRooms.setVisitorLastSeenByRoomId(room._id,new Date());
+        await LivechatRooms.setVisitorLastMessageTimestampByRoomId(room._id, message.ts);
 	},
 	callbacks.priority.HIGH,
 	'save-last-visitor-message-timestamp',

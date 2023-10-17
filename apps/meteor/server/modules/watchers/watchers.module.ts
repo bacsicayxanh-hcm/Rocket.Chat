@@ -339,6 +339,10 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 			return;
 		}
 
+		// if (!hasRoomFields(data || diff)) {
+		// 	return;
+		// }
+
 		var projection =  {
 			_id: 1,
 			v:1,
@@ -348,8 +352,6 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 			lastMessage: 1,
 			unread: 1,
 			unreadNotLoaded:1,
-
-
 			name: 1,
 			fname: 1,
 			t: 1,
@@ -360,16 +362,6 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		if (!room) { 
 			return;
 		}
-
-		if (clientAction === 'removed') {
-			void broadcast('watch.rooms', { clientAction, room: room });
-			return;
-		}
-
-		if (!hasRoomFields(data || diff)) {
-			return;
-		}
-
 		
 		const names = new Map();
 		(
