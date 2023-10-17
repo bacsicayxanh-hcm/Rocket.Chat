@@ -177,7 +177,7 @@ jobs:
           tar czf /tmp/Rocket.Chat.tar.gz bundle
 
       - name: Store build
-        uses: actions/upload-artifact@v3.1.1
+        uses: actions/upload-artifact@v3.1.0
         env:
           ACTIONS_STEP_DEBUG: true
         with:
