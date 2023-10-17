@@ -343,23 +343,34 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		// 	return;
 		// }
 
-		var projection =  {
-			_id: 1,
-			v:1,
-			departmentId: 1,
-			servedBy: 1,
-			open: 1,
-			lastMessage: 1,
-			unread: 1,
-			unreadNotLoaded:1,
-			name: 1,
-			fname: 1,
-			t: 1,
-			lm: 1,		
-			// @TODO create an API to register this fields based on room type
+		// var projection =  {
+		// 	_id: 1,
+		// 	v:1,
+		// 	departmentId: 1,
+		// 	servedBy: 1,
+		// 	open: 1,
+		// 	lastMessage: 1,
+		// 	unread: 1,
+		// 	unreadNotLoaded:1,
+		// 	name: 1,
+		// 	fname: 1,
+		// 	t: 1,
+		// 	lm: 1,		
+		// 	// @TODO create an API to register this fields based on room type
+		// }
+		// var room = await LiveChatRooms.findOneById(id, { projection: projection });
+		// if (!room) { 
+		// 	return;
+		// }
+
+	
+
+		if (!hasRoomFields(data || diff)) {
+			return;
 		}
-		var room = await LiveChatRooms.findOneById(id, { projection: projection });
-		if (!room) { 
+
+		const room = data ?? (await Rooms.findOneById(id, { projection: roomFields }));
+		if (!room) {
 			return;
 		}
 		
