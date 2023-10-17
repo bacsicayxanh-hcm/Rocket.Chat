@@ -185,7 +185,7 @@ jobs:
 
       - name: Remove build
         run: |
-          rm -r /tmp/dist
+          rm -r -f /tmp/dist
 
   deploy-k8s:
     name: Deploy to k8s
