@@ -14,7 +14,7 @@ import type {
 	INotificationDesktop,
 	IPbxEvent,
 	IRole,
-	IRoom,IOmnichannelRoom,
+	IRoom,
 	ISetting,
 	ISocketConnection,
 	ISubscription,
