@@ -131,7 +131,7 @@ export type EventSignatures = {
 					};
 			  },
 	): void;
-	'watch.rooms'(data: { clientAction: ClientAction; room: IOmnichannelRoom }): void;
+	'watch.rooms'(data: { clientAction: ClientAction; room: IRoom }): void;
 	'watch.subscriptions'(
 		data:
 			| {

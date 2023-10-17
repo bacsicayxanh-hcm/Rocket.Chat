@@ -232,6 +232,7 @@ export interface ILivechatRoomsModel extends IBaseModel<IOmnichannelRoom> {
 	removeById(_id: string): Promise<DeleteResult>;
 	setVisitorLastMessageTimestampByRoomId(roomId: string, lastMessageTs: Date): Promise<UpdateResult>;
 	setVisitorLastSeenByRoomId(roomId: string, lastSeen: Date): Promise<UpdateResult>;
+	setRoomUnreadByRoomId(roomId: string, unread: number): Promise<UpdateResult>;
 	setVisitorInactivityInSecondsById(roomId: string, visitorInactivity: any): Promise<UpdateResult>;
 	changeVisitorByRoomId(roomId: string, visitor: { _id: string; username: string; token: string }): Promise<UpdateResult>;
 	unarchiveOneById(roomId: string): Promise<UpdateResult>;

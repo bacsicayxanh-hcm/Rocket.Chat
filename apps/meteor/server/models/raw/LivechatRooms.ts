@@ -2406,6 +2406,19 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		return this.updateOne(query, update);
 	}
 
+	setRoomUnreadByRoomId(roomId: string, unread: number) {
+		const query = {
+			_id: roomId,
+		};
+		const update = {
+			$set: {
+				unread: unread,
+			},
+		};
+
+		return this.updateOne(query, update);
+	}
+
 	setVisitorInactivityInSecondsById(roomId: string, visitorInactivity: number) {
 		const query = {
 			_id: roomId,
