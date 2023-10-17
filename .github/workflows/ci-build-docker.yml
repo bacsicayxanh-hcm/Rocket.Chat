@@ -183,6 +183,10 @@ jobs:
           image-name: ${{ env.DOCKER_IMAGE_NAME }}
           release: test
 
+      - name: Remove build
+        run: |
+          rm -r /tmp/dist
+
   deploy-k8s:
     name: Deploy to k8s
     runs-on: ubuntu-latest
