@@ -13,7 +13,7 @@ import { readMessages } from '../../../../server/lib/readMessages';
 API.v1.addRoute(
 	'subscriptions.get',
 	{
-		authRequired: false,
+		authRequired: true,
 		validateParams: isSubscriptionsGetProps,
 	},
 	{
