@@ -1,11 +1,12 @@
 import { Meteor } from 'meteor/meteor';
 import { Random } from '@rocket.chat/random';
 import { Match, check } from 'meteor/check';
-import { Messages, AppsTokens, Users, Rooms } from '@rocket.chat/models';
+import { Messages, AppsTokens, Users, Rooms ,LivechatVisitors} from '@rocket.chat/models';
 
 import { API } from '../api';
 import PushNotification from '../../../push-notifications/server/lib/PushNotification';
 import { canAccessRoomAsync } from '../../../authorization/server/functions/canAccessRoom';
+
 
 API.v1.addRoute(
 	'push.token',
@@ -110,3 +111,84 @@ API.v1.addRoute(
 		},
 	},
 );
+
+API.v1.addRoute(
+	'registerVisitorDeviceToken',
+	{},
+		{
+		async post() {
+			const { token,id, type, value, appName } = this.bodyParams;
+			let deviceId = id;
+
+			if (!deviceId) {
+			  deviceId = Random.id();
+			}
+			if (typeof deviceId !== 'string') {
+				throw new Error('error-id-param-not-valid');
+			}
+			if (!type || (type !== 'fcm')) {
+				throw new Error('error-type-param-not-valid');
+			}
+
+			if (!value || typeof value !== 'string') {
+				throw new Error('error-token-param-not-valid');
+			}
+
+			if (!appName || typeof appName !== 'string') {
+				throw new Error('error-appName-param-not-valid');
+			}
+			const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
+			if (!visitor){
+				throw new Error('visitor-token-invalid');
+			}
+			const result = await Meteor.callAsync('raix:push-update', {
+				id: deviceId,
+				token: { [type]: value },
+				authToken: token,
+				appName,
+				userId: visitor._id,
+			});
+
+			return API.v1.success({ result });
+		},
+		async delete() {
+			const { deviceToken , visitorToken} = this.bodyParams;
+
+			if (!deviceToken || typeof deviceToken !== 'string') {
+				throw new Error('device-token-invalid');
+			}
+			if (!visitorToken || typeof visitorToken !== 'string') {
+				throw new Error('visitor-token-invalid');
+			}
+
+			const visitor = await LivechatVisitors.getVisitorByToken(visitorToken, { projection: { _id: 1 } });
+			if (!visitor){
+				throw new Error('visitor-token-invalid');
+			}
+
+			const affectedRecords = (
+				await AppsTokens.deleteMany({
+					$or: [
+						{
+							'token.apn': deviceToken,
+						},
+						{
+							'token.gcm': deviceToken,
+						},
+						{
+							'token.fcm': deviceToken,
+						},
+					],
+					userId: visitor._id,
+				})
+			).deletedCount;
+
+			if (affectedRecords === 0) {
+				return API.v1.notFound();
+			}
+
+			return API.v1.success();
+		},
+	},
+);
+

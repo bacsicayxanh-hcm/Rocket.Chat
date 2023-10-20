@@ -46,16 +46,16 @@ type BroadcastCallback = <T extends keyof EventSignatures>(event: T, ...args: Pa
 
 const hasKeys =
 	(requiredKeys: string[]): ((data?: Record<string, any>) => boolean) =>
-	(data?: Record<string, any>): boolean => {
-		if (!data) {
-			return false;
-		}
+		(data?: Record<string, any>): boolean => {
+			if (!data) {
+				return false;
+			}
 
-		return Object.keys(data)
-			.filter((key) => key !== '_id')
-			.map((key) => key.split('.')[0])
-			.some((key) => requiredKeys.includes(key));
-	};
+			return Object.keys(data)
+				.filter((key) => key !== '_id')
+				.map((key) => key.split('.')[0])
+				.some((key) => requiredKeys.includes(key));
+		};
 
 const hasRoomFields = hasKeys(Object.keys(roomFields));
 const hasSubscriptionFields = hasKeys(Object.keys(subscriptionFields));
@@ -363,7 +363,7 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		// 	return;
 		// }
 
-	
+
 
 		if (!hasRoomFields(data || diff)) {
 			return;
@@ -373,23 +373,23 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		if (!room) {
 			return;
 		}
-		
+
+		var list = room.servedBy ? await Users.findUsersByIds([room.servedBy._id], {
+			projection: {
+				_id: 1,
+				name: 1,
+			},
+		}).toArray() : [];
+
 		const names = new Map();
-		(
-			await Users.findUsersByIds([room.servedBy!._id], {
-				projection: {
-					_id: 1,
-					name: 1,
-				},
-			}).toArray()
-		).forEach((user) => {
+		list.forEach((user) => {
 			names.set(user._id, user.name);
 		});
 
 		// const names = Users.findUsersByUsernames([room.servedBy.user])
 		if (room.servedBy) {
 			room.servedBy.name = getNameOfId(names, room.servedBy._id);
-		  }
+		}
 
 		void broadcast('watch.rooms', { clientAction, room });
 	});
