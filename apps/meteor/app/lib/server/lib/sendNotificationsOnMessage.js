@@ -478,7 +478,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
-	const uid = room.u.id;
+	const uid = room.v.id;
 
 	void sendNotificationToVisitor({
 		uid,
