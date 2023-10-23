@@ -257,32 +257,44 @@ export const sendNotificationToVisitor = async ({
 	}
 
 	const queueItems = [];
+	queueItems.push({
+		type: 'push',
+		data: await getPushData({
+			notificationMessage,
+			room,
+			message,
+			userId: uid,
+			senderUsername: sender.username,
+			senderName: sender.name,
+			receiver,
+		}),
+	});
 
-	if (
-		shouldNotifyMobile({
-			disableAllMessageNotifications,
-			mobilePushNotifications,
-			hasMentionToAll,
-			isHighlighted,
-			hasMentionToUser,
-			hasReplyToThread,
-			roomType,
-			isThread,
-		})
-	) {
-		queueItems.push({
-			type: 'push',
-			data: await getPushData({
-				notificationMessage,
-				room,
-				message,
-				userId: uid,
-				senderUsername: sender.username,
-				senderName: sender.name,
-				receiver,
-			}),
-		});
-	}
+	// if (
+	// 	shouldNotifyMobile({
+	// 		disableAllMessageNotifications,
+	// 		mobilePushNotifications,
+	// 		hasMentionToAll,
+	// 		isHighlighted,
+	// 		hasMentionToUser,
+	// 		hasReplyToThread,
+	// 		roomType,
+	// 		isThread,
+	// 	})
+	// ) {
+	// 	queueItems.push({
+	// 		type: 'push',
+	// 		data: await getPushData({
+	// 			notificationMessage,
+	// 			room,
+	// 			message,
+	// 			userId: uid,
+	// 			senderUsername: sender.username,
+	// 			senderName: sender.name,
+	// 			receiver,
+	// 		}),
+	// 	});
+	// }
 
 	if (
 		receiver.emails &&
@@ -467,7 +479,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
-	const uid = room.v.id;
+	const uid = room.u.id;
 
 	void sendNotificationToVisitor({
 		uid,
