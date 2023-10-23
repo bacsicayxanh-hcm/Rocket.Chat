@@ -6,6 +6,8 @@ import { Messages, AppsTokens, Users, Rooms ,LivechatVisitors} from '@rocket.cha
 import { API } from '../api';
 import PushNotification from '../../../push-notifications/server/lib/PushNotification';
 import { canAccessRoomAsync } from '../../../authorization/server/functions/canAccessRoom';
+import { logger } from '../../../../app/push/server/logger';
+
 
 
 API.v1.addRoute(
@@ -111,46 +113,87 @@ API.v1.addRoute(
 		},
 	},
 );
-
 API.v1.addRoute(
 	'registerVisitorDeviceToken',
 	{},
-		{
-		async post() {
-			const { token,id, type, value, appName } = this.bodyParams;
-			let deviceId = id;
-
-			if (!deviceId) {
-			  deviceId = Random.id();
-			}
-			if (typeof deviceId !== 'string') {
-				throw new Error('error-id-param-not-valid');
-			}
-			if (!type || (type !== 'fcm')) {
-				throw new Error('error-type-param-not-valid');
-			}
-
-			if (!value || typeof value !== 'string') {
-				throw new Error('error-token-param-not-valid');
-			}
-
-			if (!appName || typeof appName !== 'string') {
-				throw new Error('error-appName-param-not-valid');
-			}
-			const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
-			if (!visitor){
-				throw new Error('visitor-token-invalid');
-			}
-			const result = await Meteor.callAsync('raix:push-update', {
-				id: deviceId,
+	{
+	  async post() {
+		try {
+		  const { token, id, type, value, appName } = this.bodyParams;
+		  let deviceId = id || Random.id();
+  
+		  if (typeof deviceId !== 'string') {
+			throw new Error('Invalid device ID');
+		  }
+		  if (!type || type !== 'fcm') {
+			throw new Error('Invalid device type');
+		  }
+		  if (!value || typeof value !== 'string') {
+			throw new Error('Invalid device token');
+		  }
+		  if (!appName || typeof appName !== 'string') {
+			throw new Error('Invalid app name');
+		  }
+  
+		  const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
+		  if (!visitor) {
+			throw new Error('Invalid visitor');
+		  }
+  
+		  let doc = await AppsTokens.findOne({ _id: deviceId }) || await AppsTokens.findOne({ userId: visitor._id });
+  
+		  if (!doc) {
+			doc = {
+			  _id: deviceId,
+			  token: {[type]: value},
+			  authToken: token,
+			  appName,
+			  userId: visitor._id,
+			  enabled: true,
+			  createdAt: new Date(),
+			  updatedAt: new Date(),
+			  metadata: {},
+			};
+			await AppsTokens.insertOne(doc);
+		  } else {
+			await AppsTokens.updateOne({ _id: doc._id }, {
+			  $set: {
+				updatedAt: new Date(),
 				token: { [type]: value },
 				authToken: token,
-				appName,
-				userId: visitor._id,
+			  },
 			});
+		  }
+  
+		  const removed = (
+			await AppsTokens.deleteMany({
+				$and: [
+					{ _id: { $ne: doc._id } },
+					{ token: doc.token }, // Match token
+					{ appName: doc.appName }, // Match appName
+					{ token: { $exists: true } }, // Make sure token exists
+				],
+			})
+		).deletedCount;
 
-			return API.v1.success({ result });
-		},
+		if (removed) {
+			logger.debug(`Removed ${removed} existing app items`);
+		}
+  
+		  // Handle push-update
+		  // const result = await Meteor.callAsync('raix:push-update', {
+		  //   id: deviceId,
+		  //   token: { [type]: value },
+		  //   authToken: token,
+		  //   appName,
+		  //   userId: visitor._id,
+		  // });
+  
+		  return API.v1.success({ result: 'Device token registered successfully' });
+		} catch (error) {
+		  return API.v1.failure(error);
+		}
+	  },
 		async delete() {
 			const { deviceToken , visitorToken} = this.bodyParams;
 
