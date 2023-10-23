@@ -118,85 +118,95 @@ API.v1.addRoute(
 	'registerVisitorDeviceToken',
 	{},
 	{
-	  async post() {
-		try {
-		  const { token, id, type, value, appName } = this.bodyParams;
-		  let deviceId = id || Random.id();
+		async post() {
+			try {
+				const { token, id, type, value, appName } = this.bodyParams;
+				let deviceId = id || Random.id();
 
-		  if (typeof deviceId !== 'string') {
-			throw new Error('Invalid device ID');
-		  }
-		  if (!type || type !== 'fcm') {
-			throw new Error('Invalid device type');
-		  }
-		  if (!value || typeof value !== 'string') {
-			throw new Error('Invalid device token');
-		  }
-		  if (!appName || typeof appName !== 'string') {
-			throw new Error('Invalid app name');
-		  }
+				if (typeof deviceId !== 'string') {
+					throw new Error('Invalid device ID');
+				}
+				if (!type || type !== 'fcm') {
+					throw new Error('Invalid device type');
+				}
+				if (!value || typeof value !== 'string') {
+					throw new Error('Invalid device token');
+				}
+				if (!appName || typeof appName !== 'string') {
+					throw new Error('Invalid app name');
+				}
 
-		  const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
-		  if (!visitor) {
-			throw new Error('Invalid visitor');
-		  }
+				const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
+				if (!visitor) {
+					throw new Error('Invalid visitor');
+				}
 
-		  let doc = await AppsTokens.findOne({ _id: deviceId }) || await AppsTokens.findOne({ userId: visitor._id });
+				let doc = await AppsTokens.findOne({ userId: visitor._id });
 
-		  if (!doc) {
-			doc = {
-			  _id: deviceId,
-			  token: {[type]: value},
-			  authToken: token,
-			  appName,
-			  userId: visitor._id,
-			  enabled: true,
-			  createdAt: new Date(),
-			  updatedAt: new Date(),
-			  metadata: {},
-			};
-			await AppsTokens.insertOne(doc);
-		  } else {
-			await AppsTokens.updateOne({ _id: doc._id }, {
-			  $set: {
-				updatedAt: new Date(),
-				token: { [type]: value },
-				authToken: token,
-			  },
-			});
-		  }
+				if (!doc) {
+					doc = await AppsTokens.findOne({
+						$and: [
+							{ token: { [type]: value } }, // Match token
+							{ appName: appName }, // Match appName
+							{ token: { $exists: true } }, // Make sure token exists
+						],
+					});
+				}
+				if (!doc) {
+					doc = {
+						// _id: deviceId,
+						token: { [type]: value },
+						authToken: token,
+						appName: appName,
+						userId: visitor._id,
+						enabled: true,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+						metadata: {},
+						_id: id || Random.id(),
+					};
+					await AppsTokens.insertOne(doc);
+				} else {
+					await AppsTokens.updateOne({ _id: doc._id }, {
+						$set: {
+							updatedAt: new Date(),
+							token: { [type]: value },
+							authToken: token,
+						},
+					});
+				}
 
-		  const removed = (
-			await AppsTokens.deleteMany({
-				$and: [
-					{ _id: { $ne: doc._id } },
-					{ token: doc.token }, // Match token
-					{ appName: doc.appName }, // Match appName
-					{ token: { $exists: true } }, // Make sure token exists
-				],
-			})
-		).deletedCount;
+				const removed = (
+					await AppsTokens.deleteMany({
+						$and: [
+							{ _id: { $ne: doc._id } },
+							{ token: doc.token }, // Match token
+							{ appName: doc.appName }, // Match appName
+							{ token: { $exists: true } }, // Make sure token exists
+						],
+					})
+				).deletedCount;
 
-		if (removed) {
-			logger.debug(`Removed ${removed} existing app items`);
-		}
+				if (removed) {
+					logger.debug(`Removed ${removed} existing app items`);
+				}
 
-		  // Handle push-update
-		  // const result = await Meteor.callAsync('raix:push-update', {
-		  //   id: deviceId,
-		  //   token: { [type]: value },
-		  //   authToken: token,
-		  //   appName,
-		  //   userId: visitor._id,
-		  // });
+				// Handle push-update
+				// const result = await Meteor.callAsync('raix:push-update', {
+				//   id: deviceId,
+				//   token: { [type]: value },
+				//   authToken: token,
+				//   appName,
+				//   userId: visitor._id,
+				// });
 
-		  return API.v1.success({ result: 'Device token registered successfully' });
-		} catch (error) {
-		  return API.v1.failure(error);
-		}
-	  },
+				return API.v1.success({ result: doc });
+			} catch (error) {
+				return API.v1.failure(error);
+			}
+		},
 		async delete() {
-			const { deviceToken , visitorToken} = this.bodyParams;
+			const { deviceToken, visitorToken } = this.bodyParams;
 
 			if (!deviceToken || typeof deviceToken !== 'string') {
 				throw new Error('device-token-invalid');
@@ -206,7 +216,7 @@ API.v1.addRoute(
 			}
 
 			const visitor = await LivechatVisitors.getVisitorByToken(visitorToken, { projection: { _id: 1 } });
-			if (!visitor){
+			if (!visitor) {
 				throw new Error('visitor-token-invalid');
 			}
 
