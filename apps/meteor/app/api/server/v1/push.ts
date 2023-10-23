@@ -125,7 +125,7 @@ API.v1.addRoute(
 				if (typeof deviceId !== 'string') {
 					throw new Error('Invalid device ID');
 				}
-				if (!type || type !== 'fcm') {
+				if (!type || type !== 'gcm') {
 					throw new Error('Invalid device type');
 				}
 				if (!value || typeof value !== 'string') {
