@@ -357,7 +357,6 @@ const project = {
 		'receiver.status': 1,
 		'receiver.statusConnection': 1,
 		'receiver.username': 1,
-		'v':1,
 	},
 };
 
@@ -479,28 +478,29 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	);
 
 	// var fRoom = LivechatRooms.findOneById(room._id,{_id:1,v:1});
-	const uid = room.u._id;
+	
+	// const uid = room.u._id;
 
-	void sendNotificationToVisitor({
-		uid,
-		sender,
-		hasMentionToAll,
-		hasMentionToHere,
-		message,
-		notificationMessage,
-		room,
-		mentionIds,
-		disableAllMessageNotifications,
-		hasReplyToThread: usersInThread && usersInThread.includes(uid),
-	});
-	return {
-		sender,
-		hasMentionToAll,
-		hasMentionToHere,
-		notificationMessage,
-		mentionIds,
-		mentionIdsWithoutGroups,
-	};
+	// void sendNotificationToVisitor({
+	// 	uid,
+	// 	sender,
+	// 	hasMentionToAll,
+	// 	hasMentionToHere,
+	// 	message,
+	// 	notificationMessage,
+	// 	room,
+	// 	mentionIds,
+	// 	disableAllMessageNotifications,
+	// 	hasReplyToThread: usersInThread && usersInThread.includes(uid),
+	// });
+	// return {
+	// 	sender,
+	// 	hasMentionToAll,
+	// 	hasMentionToHere,
+	// 	notificationMessage,
+	// 	mentionIds,
+	// 	mentionIdsWithoutGroups,
+	// };
 }
 
 export async function sendAllNotifications(message, room) {
