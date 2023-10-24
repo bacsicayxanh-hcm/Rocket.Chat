@@ -176,169 +176,169 @@ export const sendNotification = async ({
 		});
 	}
 };
-export const sendNotificationToVisitor = async ({
-	uid,
-	sender,
-	hasReplyToThread,
-	hasMentionToAll,
-	hasMentionToHere,
-	message,
-	notificationMessage,
-	room,
-	mentionIds,
-	disableAllMessageNotifications,
-}) => {
-	if (TroubleshootDisableNotifications === true) {
-		return;
-	}
+// export const sendNotificationToVisitor = async ({
+// 	uid,
+// 	sender,
+// 	hasReplyToThread,
+// 	hasMentionToAll,
+// 	hasMentionToHere,
+// 	message,
+// 	notificationMessage,
+// 	room,
+// 	mentionIds,
+// 	disableAllMessageNotifications,
+// }) => {
+// 	if (TroubleshootDisableNotifications === true) {
+// 		return;
+// 	}
 
-	// don't notify the sender
-	if (uid === sender._id) {
-		return;
-	}
+// 	// don't notify the sender
+// 	if (uid === sender._id) {
+// 		return;
+// 	}
 
-	const hasMentionToUser = mentionIds.includes(uid);
+// 	const hasMentionToUser = mentionIds.includes(uid);
 
-	// mute group notifications (@here and @all) if not directly mentioned as well
-	// if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
-	// 	return;
-	// }
+// 	// mute group notifications (@here and @all) if not directly mentioned as well
+// 	// if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
+// 	// 	return;
+// 	// }
 
 
-	const receiver = await LivechatVisitors.findOneById(uid, {
-		projection: {
-			active: 1,
-			emails: 1,
-			language: 1,
-			status: 1,
-			statusConnection: 1,
-			username: 1,
-		},
-	});
+// 	const receiver = await LivechatVisitors.findOneById(uid, {
+// 		projection: {
+// 			active: 1,
+// 			emails: 1,
+// 			language: 1,
+// 			status: 1,
+// 			statusConnection: 1,
+// 			username: 1,
+// 		},
+// 	});
 
-	const roomType = room.t;
-	// If the user doesn't have permission to view direct messages, don't send notification of direct messages.
-	if (roomType === 'd' && !(await hasPermissionAsync(uid, 'view-d-room'))) {
-		return;
-	}
+// 	const roomType = room.t;
+// 	// If the user doesn't have permission to view direct messages, don't send notification of direct messages.
+// 	if (roomType === 'd' && !(await hasPermissionAsync(uid, 'view-d-room'))) {
+// 		return;
+// 	}
 
-	const isThread = !!message.tmid && !message.tshow;
+// 	const isThread = !!message.tmid && !message.tshow;
 
-	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
+// 	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
 
-	const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
+// 	const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
 
-	const { desktopNotifications, mobilePushNotifications, emailNotifications } = subscription;
+// 	const { desktopNotifications, mobilePushNotifications, emailNotifications } = subscription;
 
-	// busy users don't receive desktop notification
-	// if (
-	// 	shouldNotifyDesktop({
-	// 		disableAllMessageNotifications,
-	// 		status: receiver.status,
-	// 		statusConnection: receiver.statusConnection,
-	// 		desktopNotifications,
-	// 		hasMentionToAll,
-	// 		hasMentionToHere,
-	// 		isHighlighted,
-	// 		hasMentionToUser,
-	// 		hasReplyToThread,
-	// 		roomType,
-	// 		isThread,
-	// 	})
-	// ) {
-	// 	await notifyDesktopUser({
-	// 		notificationMessage,
-	// 		userId: uid,
-	// 		user: sender,
-	// 		message,
-	// 		room,
-	// 	});
-	// }
+// 	// busy users don't receive desktop notification
+// 	// if (
+// 	// 	shouldNotifyDesktop({
+// 	// 		disableAllMessageNotifications,
+// 	// 		status: receiver.status,
+// 	// 		statusConnection: receiver.statusConnection,
+// 	// 		desktopNotifications,
+// 	// 		hasMentionToAll,
+// 	// 		hasMentionToHere,
+// 	// 		isHighlighted,
+// 	// 		hasMentionToUser,
+// 	// 		hasReplyToThread,
+// 	// 		roomType,
+// 	// 		isThread,
+// 	// 	})
+// 	// ) {
+// 	// 	await notifyDesktopUser({
+// 	// 		notificationMessage,
+// 	// 		userId: uid,
+// 	// 		user: sender,
+// 	// 		message,
+// 	// 		room,
+// 	// 	});
+// 	// }
 
-	const queueItems = [];
-	queueItems.push({
-		type: 'push',
-		data: await getPushData({
-			notificationMessage,
-			room,
-			message,
-			userId: uid,
-			senderUsername: sender.username,
-			senderName: sender.name,
-			receiver,
-		}),
-	});
+// 	const queueItems = [];
+// 	queueItems.push({
+// 		type: 'push',
+// 		data: await getPushData({
+// 			notificationMessage,
+// 			room,
+// 			message,
+// 			userId: uid,
+// 			senderUsername: sender.username,
+// 			senderName: sender.name,
+// 			receiver,
+// 		}),
+// 	});
 
-	// if (
-	// 	shouldNotifyMobile({
-	// 		disableAllMessageNotifications,
-	// 		mobilePushNotifications,
-	// 		hasMentionToAll,
-	// 		isHighlighted,
-	// 		hasMentionToUser,
-	// 		hasReplyToThread,
-	// 		roomType,
-	// 		isThread,
-	// 	})
-	// ) {
-	// 	queueItems.push({
-	// 		type: 'push',
-	// 		data: await getPushData({
-	// 			notificationMessage,
-	// 			room,
-	// 			message,
-	// 			userId: uid,
-	// 			senderUsername: sender.username,
-	// 			senderName: sender.name,
-	// 			receiver,
-	// 		}),
-	// 	});
-	// }
+// 	// if (
+// 	// 	shouldNotifyMobile({
+// 	// 		disableAllMessageNotifications,
+// 	// 		mobilePushNotifications,
+// 	// 		hasMentionToAll,
+// 	// 		isHighlighted,
+// 	// 		hasMentionToUser,
+// 	// 		hasReplyToThread,
+// 	// 		roomType,
+// 	// 		isThread,
+// 	// 	})
+// 	// ) {
+// 	// 	queueItems.push({
+// 	// 		type: 'push',
+// 	// 		data: await getPushData({
+// 	// 			notificationMessage,
+// 	// 			room,
+// 	// 			message,
+// 	// 			userId: uid,
+// 	// 			senderUsername: sender.username,
+// 	// 			senderName: sender.name,
+// 	// 			receiver,
+// 	// 		}),
+// 	// 	});
+// 	// }
 
-	if (
-		receiver.emails &&
-		shouldNotifyEmail({
-			disableAllMessageNotifications,
-			statusConnection: receiver.statusConnection,
-			emailNotifications,
-			isHighlighted,
-			hasMentionToUser,
-			hasMentionToAll,
-			hasReplyToThread,
-			roomType,
-			isThread,
-		})
-	) {
-		for await (const email of receiver.emails) {
-			if (email.verified) {
-				queueItems.push({
-					type: 'email',
-					data: await getEmailData({
-						message,
-						receiver,
-						sender,
-						subscription,
-						room,
-						emailAddress: email.address,
-						hasMentionToUser,
-					}),
-				});
+// 	if (
+// 		receiver.emails &&
+// 		shouldNotifyEmail({
+// 			disableAllMessageNotifications,
+// 			statusConnection: receiver.statusConnection,
+// 			emailNotifications,
+// 			isHighlighted,
+// 			hasMentionToUser,
+// 			hasMentionToAll,
+// 			hasReplyToThread,
+// 			roomType,
+// 			isThread,
+// 		})
+// 	) {
+// 		for await (const email of receiver.emails) {
+// 			if (email.verified) {
+// 				queueItems.push({
+// 					type: 'email',
+// 					data: await getEmailData({
+// 						message,
+// 						receiver,
+// 						sender,
+// 						subscription,
+// 						room,
+// 						emailAddress: email.address,
+// 						hasMentionToUser,
+// 					}),
+// 				});
 
-				break;
-			}
-		}
-	}
+// 				break;
+// 			}
+// 		}
+// 	}
 
-	if (queueItems.length) {
-		Notification.scheduleItem({
-			user: receiver,
-			uid: uid,
-			rid: room._id,
-			mid: message._id,
-			items: queueItems,
-		});
-	}
-};
+// 	if (queueItems.length) {
+// 		Notification.scheduleItem({
+// 			user: receiver,
+// 			uid: uid,
+// 			rid: room._id,
+// 			mid: message._id,
+// 			items: queueItems,
+// 		});
+// 	}
+// };
 
 
 const project = {
