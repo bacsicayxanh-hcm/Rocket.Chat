@@ -229,9 +229,6 @@ API.v1.addRoute(
 						{
 							'token.gcm': deviceToken,
 						},
-						{
-							'token.fcm': deviceToken,
-						},
 					],
 					userId: visitor._id,
 				})
