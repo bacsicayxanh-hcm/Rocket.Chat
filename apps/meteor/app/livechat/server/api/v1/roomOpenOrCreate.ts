@@ -56,7 +56,7 @@ API.v1.addRoute('livechat/room.openOrCreate', {
 				},
 			};
 
-			let newRoom : IOmnichannelRoom | undefined;
+			let newRoom ;
 			if (!agent) {
 				newRoom = await getRoom({ guest, rid, agent, roomInfo, extraParams });
 			} else { 
