@@ -200,9 +200,9 @@ export const sendNotificationToVisitor = async ({
 	const hasMentionToUser = mentionIds.includes(uid);
 
 	// mute group notifications (@here and @all) if not directly mentioned as well
-	if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
-		return;
-	}
+	// if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
+	// 	return;
+	// }
 
 
 	const receiver = await LivechatVisitors.findOneById(uid, {
@@ -231,29 +231,29 @@ export const sendNotificationToVisitor = async ({
 	const { desktopNotifications, mobilePushNotifications, emailNotifications } = subscription;
 
 	// busy users don't receive desktop notification
-	if (
-		shouldNotifyDesktop({
-			disableAllMessageNotifications,
-			status: receiver.status,
-			statusConnection: receiver.statusConnection,
-			desktopNotifications,
-			hasMentionToAll,
-			hasMentionToHere,
-			isHighlighted,
-			hasMentionToUser,
-			hasReplyToThread,
-			roomType,
-			isThread,
-		})
-	) {
-		await notifyDesktopUser({
-			notificationMessage,
-			userId: uid,
-			user: sender,
-			message,
-			room,
-		});
-	}
+	// if (
+	// 	shouldNotifyDesktop({
+	// 		disableAllMessageNotifications,
+	// 		status: receiver.status,
+	// 		statusConnection: receiver.statusConnection,
+	// 		desktopNotifications,
+	// 		hasMentionToAll,
+	// 		hasMentionToHere,
+	// 		isHighlighted,
+	// 		hasMentionToUser,
+	// 		hasReplyToThread,
+	// 		roomType,
+	// 		isThread,
+	// 	})
+	// ) {
+	// 	await notifyDesktopUser({
+	// 		notificationMessage,
+	// 		userId: uid,
+	// 		user: sender,
+	// 		message,
+	// 		room,
+	// 	});
+	// }
 
 	const queueItems = [];
 	queueItems.push({
