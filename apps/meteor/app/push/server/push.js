@@ -9,7 +9,7 @@ import { sendGCM } from './gcm';
 import { logger } from './logger';
 import { settings } from '../../settings/server';
 
-export const _matchToken = Match.OneOf({ apn: String }, { gcm: String },{fcm:String});
+export const _matchToken = Match.OneOf({ apn: String }, { gcm: String });
 
 class PushClass {
 	options = {};
@@ -128,7 +128,7 @@ class PushClass {
 					},
 					{
 						'token.gcm': token,
-					}
+					},
 				],
 			});
 			return;
