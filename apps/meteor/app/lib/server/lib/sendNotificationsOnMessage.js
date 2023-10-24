@@ -1,7 +1,7 @@
 import { Subscriptions, Users } from '@rocket.chat/models';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
-import { LivechatVisitors, Subscriptions, Users } from '@rocket.chat/models';
+import { LivechatVisitors, Subscriptions, Users ,LivechatRooms} from '@rocket.chat/models';
 
 import { callbacks } from '../../../../lib/callbacks';
 import { roomCoordinator } from '../../../../server/lib/rooms/roomCoordinator';
@@ -479,7 +479,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
-	const uid = room.v.id;
+	var fRoom = LivechatRooms.findOneById(room._id,{_id:1,v:1});
+	const uid = fRoom.v._id;
 
 	void sendNotificationToVisitor({
 		uid,
