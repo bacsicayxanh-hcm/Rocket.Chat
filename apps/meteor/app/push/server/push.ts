@@ -11,7 +11,7 @@ import type { PushOptions, PendingPushNotification } from './definition';
 import { sendGCM } from './gcm';
 import { logger } from './logger';
 
-export const _matchToken = Match.OneOf({ apn: String }, { gcm: String },{fcm:String});
+export const _matchToken = Match.OneOf({ apn: String }, { gcm: String });
 
 // This type must match the type defined in the push gateway
 type GatewayNotification = {
@@ -168,7 +168,7 @@ class PushClass {
 					},
 					{
 						'token.gcm': token,
-					}
+					},
 				],
 			});
 			return;
