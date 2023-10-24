@@ -128,10 +128,7 @@ class PushClass {
 					},
 					{
 						'token.gcm': token,
-					},
-					{
-						'token.fcm': token,
-					},
+					}
 				],
 			});
 			return;
@@ -177,10 +174,6 @@ class PushClass {
 				countGcm.push(app._id);
 				return this.sendGatewayPush(gateway, 'gcm', app.token.gcm, notification);
 			}
-			if (app.token.fcm) {
-				countGcm.push(app._id);
-				return this.sendGatewayPush(gateway, 'fcm', app.token.fcm, notification);
-			}
 		}
 	}
 
@@ -204,7 +197,7 @@ class PushClass {
 
 		const query = {
 			userId: notification.userId,
-			$or: [{ 'token.apn': { $exists: true } }, { 'token.gcm': { $exists: true } },{ 'token.fcm': { $exists: true } }],
+			$or: [{ 'token.apn': { $exists: true } }, { 'token.gcm': { $exists: true } }],
 		};
 
 		await AppsTokens.find(query).forEach((app) => {
