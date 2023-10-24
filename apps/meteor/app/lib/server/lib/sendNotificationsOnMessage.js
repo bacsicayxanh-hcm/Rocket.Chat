@@ -478,8 +478,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
-	var fRoom = LivechatRooms.findOneById(room._id,{_id:1,v:1});
-	const uid = fRoom.v._id;
+	// var fRoom = LivechatRooms.findOneById(room._id,{_id:1,v:1});
+	const uid = room.u._id;
 
 	void sendNotificationToVisitor({
 		uid,
