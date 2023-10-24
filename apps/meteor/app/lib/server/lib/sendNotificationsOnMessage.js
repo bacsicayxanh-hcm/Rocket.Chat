@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
-import { LivechatVisitors, Subscriptions, Users } from '@rocket.chat/models';
+import { LivechatVisitors, Subscriptions, Users ,LivechatRooms} from '@rocket.chat/models';
 
 import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
 import { settings } from '../../../settings/server';
@@ -478,7 +478,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
-	const uid = room.v.id;
+	var fRoom = LivechatRooms.findOneById(room._id,{_id:1,v:1});
+	const uid = fRoom.v._id;
 
 	void sendNotificationToVisitor({
 		uid,
