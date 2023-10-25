@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
-import { Subscriptions, Users } from '@rocket.chat/models';
+import { Subscriptions, Users ,LivechatRooms, LivechatVisitors} from '@rocket.chat/models';
 
 import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
 import { settings } from '../../../settings/server';
@@ -176,6 +176,91 @@ export const sendNotification = async ({
 		});
 	}
 };
+export const sendNotificationVisitor = async ({
+	livechatRoom,
+	sender,
+	hasReplyToThread,
+	hasMentionToAll,
+	hasMentionToHere,
+	message,
+	notificationMessage,
+	room,
+	mentionIds,
+	disableAllMessageNotifications,
+}) => {
+	// if (TroubleshootDisableNotifications === true) {
+	// 	return;
+	// }
+
+	// don't notify the sender
+	if (livechatRoom.v._id === sender._id) {
+		return;
+	}
+
+	const hasMentionToUser = mentionIds.includes(livechatRoom.v._id);
+
+	// mute group notifications (@here and @all) if not directly mentioned as well
+	// if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
+	// 	return;
+	// }
+
+	if (!livechatRoom.receiver) {
+		livechatRoom.receiver = [
+			await LivechatVisitors.findOneById(livechatRoom.v._id, {
+				projection: {
+					active: 1,
+					emails: 1,
+					language: 1,
+					status: 1,
+					statusConnection: 1,
+					username: 1,
+					name:1
+				},
+			}),
+		];
+	}
+
+	const [receiver] = livechatRoom.receiver;
+
+	// const roomType = room.t;
+	// // If the user doesn't have permission to view direct messages, don't send notification of direct messages.
+	// if (roomType === 'd' && !(await hasPermissionAsync(subscription.u._id, 'view-d-room'))) {
+	// 	return;
+	// }
+
+	const isThread = !!message.tmid && !message.tshow;
+
+	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
+
+	const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
+
+	const { desktopNotifications, mobilePushNotifications, emailNotifications } = livechatRoom;
+
+	const queueItems = [];
+
+	queueItems.push({
+		type: 'push',
+		data: await getPushData({
+			notificationMessage,
+			room,
+			message,
+			userId: livechatRoom.v._id,
+			senderUsername: sender.username,
+			senderName: sender.name,
+			receiver,
+		}),
+	});
+
+	if (queueItems.length) {
+		Notification.scheduleItem({
+			user: receiver,
+			uid: livechatRoom.v._id,
+			rid: room._id,
+			mid: message._id,
+			items: queueItems,
+		});
+	}
+};
 
 const project = {
 	$project: {
@@ -195,6 +280,18 @@ const project = {
 		'receiver.username': 1,
 	},
 };
+const vProject = {
+	$project: {
+		'desktopNotifications': 1,
+		'emailNotifications': 1,
+		'mobilePushNotifications': 1,
+		'muteGroupMentions': 1,
+		'name': 1,
+		'rid': 1,
+		'userHighlights': 1,
+		'v._id': 1,
+	},
+};
 
 const filter = {
 	$match: {
@@ -210,6 +307,14 @@ const lookup = {
 		as: 'receiver',
 	},
 };
+const vLookup = {
+	$lookup: {
+		from: 'livechat_visitor',
+		localField: 'v._id',
+		foreignField: '_id',
+		as: 'receiver',
+	},
+}
 
 export async function sendMessageNotifications(message, room, usersInThread = []) {
 	if (TroubleshootDisableNotifications === true) {
@@ -296,7 +401,10 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	// the query is defined by the server's default values and Notifications_Max_Room_Members setting.
 
 	const subscriptions = await Subscriptions.col.aggregate([{ $match: query }, lookup, filter, project]).toArray();
-
+	
+	const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
+		rid: room._id} }, vLookup, {}, vProject]).toArray();
+	
 	subscriptions.forEach(
 		(subscription) =>
 			void sendNotification({
@@ -312,6 +420,22 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				hasReplyToThread: usersInThread && usersInThread.includes(subscription.u._id),
 			}),
 	);
+	visitorRoom.forEach(
+		(livechatRoom)=>
+		void sendNotificationVisitor({
+			livechatRoom,
+			sender,
+			hasMentionToAll,
+			hasMentionToHere,
+			message,
+			notificationMessage,
+			room,
+			mentionIds,
+			disableAllMessageNotifications,
+			hasReplyToThread: usersInThread && usersInThread.includes(room.v._id),
+		}),
+	);
+
 
 	return {
 		sender,
