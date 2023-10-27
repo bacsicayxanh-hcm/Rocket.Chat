@@ -192,6 +192,10 @@ export const sendNotificationVisitor = async ({
 	// 	return;
 	// }
 
+	if (!livechatRoom.v._id){
+		return;
+	}
+
 	// don't notify the sender
 	if (livechatRoom.v._id === sender._id) {
 		return;
@@ -403,7 +407,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	const subscriptions = await Subscriptions.col.aggregate([{ $match: query }, lookup, filter, project]).toArray();
 	
 	const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
-		rid: room._id} }, vLookup, {}, vProject]).toArray();
+		rid: room._id} }, vLookup, vProject]).toArray();
 	
 	subscriptions.forEach(
 		(subscription) =>
