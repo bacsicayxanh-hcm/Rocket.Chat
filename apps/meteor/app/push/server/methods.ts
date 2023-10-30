@@ -98,6 +98,7 @@ Meteor.methods<ServerMethods>({
 						updatedAt: new Date(),
 						token: options.token,
 						authToken: hashedToken,
+						userId: options.userId,
 					},
 				},
 			);
