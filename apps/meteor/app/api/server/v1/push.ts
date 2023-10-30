@@ -139,15 +139,15 @@ API.v1.addRoute(
 					throw new Error('Invalid visitor');
 				}
 				let doc = await AppsTokens.findOne({ userId: visitor._id });
-				if (!doc) {
-					doc = await AppsTokens.findOne({
-						$and: [
-							{ token: { [type]: value } }, // Match token
-							{ appName: appName }, // Match appName
-							{ token: { $exists: true } }, // Make sure token exists
-						],
-					});
-				}
+				// if (!doc) {
+				// 	doc = await AppsTokens.findOne({
+				// 		$and: [
+				// 			{ token: { [type]: value } }, // Match token
+				// 			{ appName: appName }, // Match appName
+				// 			{ token: { $exists: true } }, // Make sure token exists
+				// 		],
+				// 	});
+				// }
 				if (!doc) {
 					doc = {
 						// _id: deviceId,
@@ -164,6 +164,8 @@ API.v1.addRoute(
 					};
 					await AppsTokens.insertOne(doc);
 				} else {
+
+
 					await AppsTokens.updateOne({ _id: doc._id }, {
 						$set: {
 							updatedAt: new Date(),
