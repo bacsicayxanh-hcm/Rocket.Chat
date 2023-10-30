@@ -19,6 +19,11 @@ import { getEmailData, shouldNotifyEmail } from '../functions/notifications/emai
 import { getPushData, shouldNotifyMobile } from '../functions/notifications/mobile';
 import { getMentions } from './notifyUsersOnMessage';
 
+import { Logger } from '../../../logger/server';
+
+const logger = new Logger('SendNotification');
+
+
 let TroubleshootDisableNotifications;
 
 export const sendNotification = async ({
@@ -410,6 +415,9 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 		rid: room._id} }, vLookup, vProject]).toArray();
 	
+	logger.log('SendNotification to Agent:',subscription._id);
+
+
 	subscriptions.forEach(
 		(subscription) =>
 			void sendNotification({
@@ -425,6 +433,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				hasReplyToThread: usersInThread && usersInThread.includes(subscription.u._id),
 			}),
 	);
+	logger.log('SendNotification to Visitor',visitorRoom.v._id);
+
 	visitorRoom.forEach(
 		(livechatRoom)=>
 		void sendNotificationVisitor({
