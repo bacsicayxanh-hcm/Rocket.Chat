@@ -414,7 +414,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 		rid: room._id} }, vLookup, vProject]).toArray();
 	
-	logger.log('SendNotification to Agent:',subscription._id);
+	logger.warn('SendNotification to Agent:',subscription._id);
 
 
 	subscriptions.forEach(
@@ -432,7 +432,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				hasReplyToThread: usersInThread && usersInThread.includes(subscription.u._id),
 			}),
 	);
-	logger.log('SendNotification to Visitor',visitorRoom.v._id);
+	logger.warn('SendNotification to Visitor',visitorRoom.v._id);
 
 	visitorRoom.forEach(
 		(livechatRoom)=>
