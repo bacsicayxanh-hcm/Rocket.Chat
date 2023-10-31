@@ -410,9 +410,6 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	// the query is defined by the server's default values and Notifications_Max_Room_Members setting.
 
 	const subscriptions = await Subscriptions.col.aggregate([{ $match: query }, lookup, filter, project]).toArray();
-	
-	logger.warn('SendNotification to Agent:',subscription._id);
-
 
 	subscriptions.forEach(
 		(subscription) =>
@@ -429,7 +426,6 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				hasReplyToThread: usersInThread && usersInThread.includes(subscription.u._id),
 			}),
 	);
-	logger.warn('SendNotification to Visitor',visitorRoom.v._id);
 
 	// const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 	// 	rid: room._id} }, vLookup, vProject]).toArray();
