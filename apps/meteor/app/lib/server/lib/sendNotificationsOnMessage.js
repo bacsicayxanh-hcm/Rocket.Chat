@@ -20,6 +20,8 @@ import { getPushData, shouldNotifyMobile } from '../functions/notifications/mobi
 import { getMentions } from './notifyUsersOnMessage';
 
 import { Logger } from '../../../logger/server';
+import { Push } from '../../../push/server';
+
 
 const logger = new Logger('SendNotification');
 
@@ -436,19 +438,31 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			v: 1,
 		}
 	});
+
+
 	if (livechatRoom) {
-		void sendNotificationVisitor({
-			livechatRoom,
-			sender,
-			hasMentionToAll,
-			hasMentionToHere,
-			message,
-			notificationMessage,
-			room,
-			mentionIds,
-			disableAllMessageNotifications,
-			hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+		await Push.send({
+			from: 'push',
+			title: `${sender.name}`,
+			text: `Mes: ${message.msg}`,
+			apn: {
+				text: `@${sender.name}:\n${i18n.t('This_is_a_push_test_messsage')}`,
+			},
+			sound: 'default',
+			userId: livechatRoom.v._id,
 		});
+		// void sendNotificationVisitor({
+		// 	livechatRoom,
+		// 	sender,
+		// 	hasMentionToAll,
+		// 	hasMentionToHere,
+		// 	message,
+		// 	notificationMessage,
+		// 	room,
+		// 	mentionIds,
+		// 	disableAllMessageNotifications,
+		// 	hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+		// });
 	}
 
 
