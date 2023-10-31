@@ -451,7 +451,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			room,
 			mentionIds,
 			disableAllMessageNotifications,
-			hasReplyToThread: usersInThread && usersInThread.includes(room.v._id),
+			hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
 		}),
 	);
 
