@@ -1,7 +1,7 @@
 import { Subscriptions, Users } from '@rocket.chat/models';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
-import { Subscriptions, Users ,LivechatRooms, LivechatVisitors} from '@rocket.chat/models';
+import { Subscriptions, Users, LivechatRooms, LivechatVisitors } from '@rocket.chat/models';
 
 import { callbacks } from '../../../../lib/callbacks';
 import { roomCoordinator } from '../../../../server/lib/rooms/roomCoordinator';
@@ -198,7 +198,7 @@ export const sendNotificationVisitor = async ({
 	// 	return;
 	// }
 
-	if (!livechatRoom.v._id){
+	if (!livechatRoom.v._id) {
 		return;
 	}
 
@@ -224,7 +224,7 @@ export const sendNotificationVisitor = async ({
 					status: 1,
 					statusConnection: 1,
 					username: 1,
-					name:1
+					name: 1
 				},
 			}),
 		];
@@ -242,9 +242,9 @@ export const sendNotificationVisitor = async ({
 
 	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
 
-	const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
+	// const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
 
-	const { desktopNotifications, mobilePushNotifications, emailNotifications } = livechatRoom;
+	// const { desktopNotifications, mobilePushNotifications, emailNotifications } = livechatRoom;
 
 	const queueItems = [];
 
@@ -430,14 +430,13 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 	// const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 	// 	rid: room._id} }, vLookup, vProject]).toArray();
-	const visitorRoom = await LivechatRooms.findById(room._id,{
-		projection:{_id:1,
-		v: 1,}
+	const livechatRoom = await LivechatRooms.findOneById(room._id, {
+		projection: {
+			_id: 1,
+			v: 1,
+		}
 	});
-
-
-	visitorRoom.forEach(
-		(livechatRoom)=>
+	if (livechatRoom) {
 		void sendNotificationVisitor({
 			livechatRoom,
 			sender,
@@ -449,8 +448,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			mentionIds,
 			disableAllMessageNotifications,
 			hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
-		}),
-	);
+		});
+	}
 
 
 	return {
