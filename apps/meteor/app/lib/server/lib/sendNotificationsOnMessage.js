@@ -445,7 +445,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			title: `${sender.name}`,
 			text: `Mes: ${message.msg}`,
 			apn: {
-				text: `@${sender.name}:\n${i18n.t('This_is_a_push_test_messsage')}`,
+				text: `@${sender.name}`,
 			},
 			sound: 'default',
 			userId: livechatRoom.v._id,
