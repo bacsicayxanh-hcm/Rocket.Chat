@@ -434,8 +434,8 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	// const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 	// 	rid: room._id} }, vLookup, vProject]).toArray();
 	const visitorRoom = await LivechatRooms.findById(room._id,{
-		_id:1,
-		v: 1,
+		projection:{_id:1,
+		v: 1,}
 	});
 
 
