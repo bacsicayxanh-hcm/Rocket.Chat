@@ -15,7 +15,7 @@ import { isFederationEnabled } from '../lib/isFederationEnabled';
 import { getUpload, requestEventsFromLatest } from '../handler';
 import { notifyUsersOnMessage } from '../../../lib/server/lib/notifyUsersOnMessage';
 import { sendAllNotifications } from '../../../lib/server/lib/sendNotificationsOnMessage';
-// import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
+import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
 
 const eventHandlers = {
 	//
@@ -207,79 +207,79 @@ const eventHandlers = {
 		const eventResult = await FederationRoomEvents.addEvent(event.context, event);
 
 		// If the event was successfully added, handle the event locally
-		// if (eventResult.success) {
-		// 	const {
-		// 		data: { message },
-		// 	} = event;
+		if (eventResult.success) {
+			const {
+				data: { message },
+			} = event;
 
-		// 	// Check if message exists
-		// 	const persistedMessage = await Messages.findOne({ _id: message._id });
+			// Check if message exists
+			const persistedMessage = await Messages.findOne({ _id: message._id });
 
-		// 	if (persistedMessage) {
-		// 		// Update the federation
-		// 		if (!persistedMessage.federation) {
-		// 			await Messages.updateOne({ _id: persistedMessage._id }, { $set: { federation: message.federation } });
-		// 		}
-		// 	} else {
-		// 		// Load the room
-		// 		const room = await Rooms.findOneById(message.rid);
+			if (persistedMessage) {
+				// Update the federation
+				if (!persistedMessage.federation) {
+					await Messages.updateOne({ _id: persistedMessage._id }, { $set: { federation: message.federation } });
+				}
+			} else {
+				// Load the room
+				const room = await Rooms.findOneById(message.rid);
 
-		// 		// Denormalize message
-		// 		const denormalizedMessage = normalizers.denormalizeMessage(message);
+				// Denormalize message
+				const denormalizedMessage = normalizers.denormalizeMessage(message);
 
-		// 		// Is there a file?
-		// 		if (denormalizedMessage.file) {
-		// 			const fileStore = FileUpload.getStore('Uploads');
+				// Is there a file?
+				if (denormalizedMessage.file) {
+					const fileStore = FileUpload.getStore('Uploads');
 
-		// 			const {
-		// 				federation: { origin },
-		// 			} = denormalizedMessage;
+					const {
+						federation: { origin },
+					} = denormalizedMessage;
 
-		// 			const { upload, buffer } = await getUpload(origin, denormalizedMessage.file._id);
+					const { upload, buffer } = await getUpload(origin, denormalizedMessage.file._id);
 
-		// 			const oldUploadId = upload._id;
+					const oldUploadId = upload._id;
 
-		// 			// Normalize upload
-		// 			delete upload._id;
-		// 			upload.rid = denormalizedMessage.rid;
-		// 			upload.userId = denormalizedMessage.u._id;
-		// 			upload.federation = {
-		// 				_id: denormalizedMessage.file._id,
-		// 				origin,
-		// 			};
+					// Normalize upload
+					delete upload._id;
+					upload.rid = denormalizedMessage.rid;
+					upload.userId = denormalizedMessage.u._id;
+					upload.federation = {
+						_id: denormalizedMessage.file._id,
+						origin,
+					};
 
-		// 			await fileStore.insert(upload, buffer);
+					await fileStore.insert(upload, buffer);
 
-		// 			// Update the message's file
-		// 			denormalizedMessage.file._id = upload._id;
+					// Update the message's file
+					denormalizedMessage.file._id = upload._id;
 
-		// 			// Update the message's attachments dependent on type
-		// 			for (const attachment of denormalizedMessage.attachments) {
-		// 				attachment.title_link = attachment.title_link.replace(oldUploadId, upload._id);
-		// 				if (/^image\/.+/.test(denormalizedMessage.file.type)) {
-		// 					attachment.image_url = attachment.image_url.replace(oldUploadId, upload._id);
-		// 				} else if (/^audio\/.+/.test(denormalizedMessage.file.type)) {
-		// 					attachment.audio_url = attachment.audio_url.replace(oldUploadId, upload._id);
-		// 				} else if (/^video\/.+/.test(denormalizedMessage.file.type)) {
-		// 					attachment.video_url = attachment.video_url.replace(oldUploadId, upload._id);
-		// 				}
-		// 			}
-		// 		}
+					// Update the message's attachments dependent on type
+					for (const attachment of denormalizedMessage.attachments) {
+						attachment.title_link = attachment.title_link.replace(oldUploadId, upload._id);
+						if (/^image\/.+/.test(denormalizedMessage.file.type)) {
+							attachment.image_url = attachment.image_url.replace(oldUploadId, upload._id);
+						} else if (/^audio\/.+/.test(denormalizedMessage.file.type)) {
+							attachment.audio_url = attachment.audio_url.replace(oldUploadId, upload._id);
+						} else if (/^video\/.+/.test(denormalizedMessage.file.type)) {
+							attachment.video_url = attachment.video_url.replace(oldUploadId, upload._id);
+						}
+					}
+				}
 
-		// 		// Create the message
-		// 		try {
-		// 			await Messages.insertOne(denormalizedMessage);
+				// Create the message
+				try {
+					await Messages.insertOne(denormalizedMessage);
 
-		// 			await processThreads(denormalizedMessage, room);
+					await processThreads(denormalizedMessage, room);
 
-		// 			// Notify users
-		// 			await notifyUsersOnMessage(denormalizedMessage, room);
-		// 			sendAllNotifications(denormalizedMessage, room);
-		// 		} catch (err) {
-		// 			serverLogger.debug(`Error on creating message: ${message._id}`);
-		// 		}
-		// 	}
-		// }
+					// Notify users
+					await notifyUsersOnMessage(denormalizedMessage, room);
+					sendAllNotifications(denormalizedMessage, room);
+				} catch (err) {
+					serverLogger.debug(`Error on creating message: ${message._id}`);
+				}
+			}
+		}
 
 		return eventResult;
 	},

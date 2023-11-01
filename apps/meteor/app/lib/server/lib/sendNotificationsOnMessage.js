@@ -555,10 +555,10 @@ settings.watch('Troubleshoot_Disable_Notifications', (value) => {
 		return callbacks.remove('afterSaveMessage', 'sendNotificationsOnMessage');
 	}
 
-	callbacks.add(
-		'afterSaveMessage',
-		(message, room) => sendAllNotifications(message, room),
-		callbacks.priority.LOW,
-		'sendNotificationsOnMessage',
-	);
+	// callbacks.add(
+	// 	'afterSaveMessage',
+	// 	(message, room) => sendAllNotifications(message, room),
+	// 	callbacks.priority.LOW,
+	// 	'sendNotificationsOnMessage',
+	// );
 });
