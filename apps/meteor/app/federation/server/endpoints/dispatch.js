@@ -16,6 +16,7 @@ import { getFederationDomain } from '../lib/getFederationDomain';
 import { isFederationEnabled } from '../lib/isFederationEnabled';
 import { serverLogger } from '../lib/logger';
 import { normalizers } from '../normalizers';
+// import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
 
 const eventHandlers = {
 	//
