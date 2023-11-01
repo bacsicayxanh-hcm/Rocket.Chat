@@ -12,7 +12,7 @@ import {
 	replaceMentionedUsernamesWithFullNames,
 } from '../functions/notifications';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
-import { getPushData, shouldNotifyMobile } from '../functions/notifications/mobile';
+import { getPushData, shouldNotifyMobile ,getPushDataToVisitor} from '../functions/notifications/mobile';
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { getMentions } from './notifyUsersOnMessage';
@@ -195,9 +195,9 @@ export const sendNotificationVisitor = async ({
 	mentionIds,
 	disableAllMessageNotifications,
 }) => {
-	// if (TroubleshootDisableNotifications === true) {
-	// 	return;
-	// }
+	if (TroubleshootDisableNotifications === true) {
+		return;
+	}
 
 	if (!livechatRoom.v._id) {
 		return;
@@ -251,7 +251,7 @@ export const sendNotificationVisitor = async ({
 
 	queueItems.push({
 		type: 'push',
-		data: await getPushData({
+		data: await getPushDataToVisitor({
 			notificationMessage,
 			room,
 			message,
@@ -332,7 +332,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 		return;
 	}
 
-	
+
 
 
 
@@ -361,46 +361,46 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	const roomMembersCount = await Users.countRoomMembers(room._id);
 	const disableAllMessageNotifications = roomMembersCount > maxMembersForNotification && maxMembersForNotification !== 0;
 	const sender = await roomCoordinator.getRoomDirectives(room.t).getMsgSender(message.u._id);
-	if (!message.token) {
+
+	if (!sender) {
 		const livechatRoom = await LivechatRooms.findOneById(room._id, {
 			projection: {
 				_id: 1,
 				v: 1,
 			}
 		});
-	
-		const agent = Users.findOneById(message.u._id);
-		
+
+
 		if (livechatRoom) {
-			await Push.send({
-				from: 'push',
-				title: `${agent.name}`,
-				text: ` ${message.msg}`,
-				apn: {
-					text: `@${agent.name}`,
-				},
-				sound: 'default',
-				userId: livechatRoom.v._id,
-			});
-			// void sendNotificationVisitor({
-			// 	livechatRoom,
-			// 	sender,
-			// 	hasMentionToAll,
-			// 	hasMentionToHere,
-			// 	message,
-			// 	notificationMessage,
-			// 	room,
-			// 	mentionIds,
-			// 	disableAllMessageNotifications,
-			// 	hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			const fSender = Users.findOneById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
+			// await Push.send({
+			// 	from: 'push',
+			// 	title: `${agent.name}`,
+			// 	text: ` ${message.msg}`,
+			// 	apn: {
+			// 		text: `@${agent.name}`,
+			// 	},
+			// 	sound: 'default',
+			// 	userId: livechatRoom.v._id,
 			// });
+			void sendNotificationVisitor({
+				livechatRoom: livechatRoom,
+				sender: fSender,
+				hasMentionToAll:
+					hasMentionToAll,
+				hasMentionToHere:hasMentionToHere,
+				message: message,
+				notificationMessage: notificationMessage,
+				room: room,
+				mentionIds: mentionIds,
+				 disableAllMessageNotifications: disableAllMessageNotifications,
+				hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			});
 		}
+		return message;
+
 	}
 
-	if (!sender) {
-		return message;
-	}
-	
 	const query = {
 		rid: room._id,
 		ignored: { $ne: sender._id },
@@ -470,7 +470,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 	// const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 	// 	rid: room._id} }, vLookup, vProject]).toArray();
-	
+
 
 
 	return {
