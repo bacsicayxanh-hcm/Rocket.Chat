@@ -10,6 +10,8 @@ import { hasPermissionAsync } from '../../../authorization/server/functions/hasP
 import { parseUrlsInMessage } from './parseUrlsInMessage';
 import { isRelativeURL } from '../../../../lib/utils/isRelativeURL';
 import notifications from '../../../notifications/server/lib/Notifications';
+import { sendAllNotifications } from '../../../lib/server/lib/sendNotificationsOnMessage';
+
 
 /**
  * IMPORTANT
@@ -276,6 +278,7 @@ export const sendMessage = async function (user, message, room, upsert = false) 
 
 		// Execute all callbacks
 		await callbacks.run('afterSaveMessage', message, room);
+		sendAllNotifications(message, room);
 		return message;
 	}
 };
