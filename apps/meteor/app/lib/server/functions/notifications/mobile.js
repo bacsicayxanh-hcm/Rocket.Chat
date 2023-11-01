@@ -64,6 +64,51 @@ export async function getPushData({
 	};
 }
 
+export async function getPushDataToVisitor({
+	room,
+	message,
+	userId,
+	senderUsername,
+	senderName,
+	notificationMessage,
+	receiver,
+	shouldOmitMessage = true,
+}) {
+	const username = settings.get('Push_show_username_room') ? (settings.get('UI_Use_Real_Name') && senderName) || senderUsername : '';
+
+	const lng = receiver.language || settings.get('Language') || 'vi';
+
+	let messageText;
+	if (shouldOmitMessage && settings.get('Push_request_content_from_server')) {
+		messageText = i18n.t('You_have_a_new_message', { lng });
+	} else if (!settings.get('Push_show_message')) {
+		messageText = i18n.t('You_have_a_new_message', { lng });
+	} else {
+		messageText = notificationMessage;
+	}
+
+	return {
+		payload: {
+			sender: message.u,
+			senderName: username,
+			type: room.t,
+			name: settings.get('Push_show_username_room') ? room.name : '',
+			messageType: message.t,
+			tmid: message.tmid,
+			...(message.t === 'e2e' && { msg: message.msg }),
+		},
+		roomName:
+			settings.get('Push_show_username_room') && roomCoordinator.getRoomDirectives(room.t).isGroupChat(room)
+				? `#${await roomCoordinator.getRoomName(room.t, room, userId)}`
+				: '',
+		username,
+		message: messageText,
+		// badge: await Subscriptions.getBadgeCount(userId),
+		category: enableNotificationReplyButton(room, receiver.username) ? CATEGORY_MESSAGE : CATEGORY_MESSAGE_NOREPLY,
+	};
+}
+
+
 export function shouldNotifyMobile({
 	disableAllMessageNotifications,
 	mobilePushNotifications,
