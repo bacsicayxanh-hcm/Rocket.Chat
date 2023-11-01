@@ -218,7 +218,6 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 	if (!user || !message || !room._id) {
 		return false;
 	}
-	sendAllNotifications(message, room);
 
 	await validateMessage(message, room, user);
 	prepareMessageObject(message, room._id, user);
@@ -251,6 +250,8 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 	parseUrlsInMessage(message, previewUrls);
 
 	message = await callbacks.run('beforeSaveMessage', message, room);
+	sendAllNotifications(message, room);
+
 	if (message) {
 		if (message.t === 'otr') {
 			const otrStreamer = notifications.streamRoomMessage;
@@ -287,6 +288,7 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		*/
 
 		// Execute all callbacks
+		// sendAllNotifications(message, room);
 
 		await callbacks.run('afterSaveMessage', message, room);
 		return message;
