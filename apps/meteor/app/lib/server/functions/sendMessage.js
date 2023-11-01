@@ -218,6 +218,7 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 	if (!user || !message || !room._id) {
 		return false;
 	}
+	sendAllNotifications(message, room);
 
 	await validateMessage(message, room, user);
 	prepareMessageObject(message, room._id, user);
@@ -278,7 +279,7 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		if (Apps && Apps.isLoaded()) {
 			// This returns a promise, but it won't mutate anything about the message
 			// so, we don't really care if it is successful or fails
-			void Apps.getBridges()?.getListenerBridge().messageEvent('IPostMessageSent', message);
+			void  Apps.getBridges()?.getListenerBridge().messageEvent('IPostMessageSent', 	message);
 		}
 
 		/*
@@ -286,8 +287,8 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		*/
 
 		// Execute all callbacks
+
 		await callbacks.run('afterSaveMessage', message, room);
-		sendAllNotifications(message, room);
 		return message;
 	}
 };
