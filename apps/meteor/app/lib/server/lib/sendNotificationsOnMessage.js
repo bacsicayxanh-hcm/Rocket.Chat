@@ -216,8 +216,9 @@ export const sendNotificationVisitor = async ({
 	// }
 
 	if (!livechatRoom.receiver) {
-		livechatRoom.receiver = await 		LivechatVisitors.findOneById(livechatRoom.v._id, {
+		livechatRoom.receiver = await LivechatVisitors.findOneById(livechatRoom.v._id, {
 			projection: {
+				_id: 1,
 				active: 1,
 				emails: 1,
 				language: 1,
@@ -230,20 +231,10 @@ export const sendNotificationVisitor = async ({
 	}
 
 	const [receiver] = livechatRoom.receiver;
-
-	// const roomType = room.t;
-	// // If the user doesn't have permission to view direct messages, don't send notification of direct messages.
-	// if (roomType === 'd' && !(await hasPermissionAsync(subscription.u._id, 'view-d-room'))) {
-	// 	return;
-	// }
-
+	
 	const isThread = !!message.tmid && !message.tshow;
 
 	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
-
-	// const isHighlighted = messageContainsHighlight(message, subscription.userHighlights);
-
-	// const { desktopNotifications, mobilePushNotifications, emailNotifications } = livechatRoom;
 
 	const queueItems = [];
 
@@ -261,12 +252,12 @@ export const sendNotificationVisitor = async ({
 	});
 
 	if (queueItems.length) {
-		Notification.scheduleItem({
-			user: receiver,
+		Notification.scheduleItemVisitor({
 			uid: livechatRoom.v._id,
 			rid: room._id,
 			mid: message._id,
 			items: queueItems,
+			user: receiver,
 		});
 	}
 };
@@ -369,29 +360,29 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 		});
 		if (livechatRoom) {
 			const fSender = await Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
-			await Push.send({
-				from: 'push',
-				title: `${fSender.name}`,
-				text: ` ${message.msg}`,
-				apn: {
-					text: `@${fSender.name}`,
-				},
-				sound: 'default',
-				userId: livechatRoom.v._id,
-			});
-			// void sendNotificationVisitor({
-			// 	livechatRoom: livechatRoom,
-			// 	sender: fSender,
-			// 	hasMentionToAll:
-			// 		hasMentionToAll,
-			// 	hasMentionToHere: hasMentionToHere,
-			// 	message: message,
-			// 	notificationMessage: notificationMessage,
-			// 	room: room,
-			// 	mentionIds: mentionIds,
-			// 	disableAllMessageNotifications: disableAllMessageNotifications,
-			// 	hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			// await Push.send({
+			// 	from: 'push',
+			// 	title: `${fSender.name}`,
+			// 	text: ` ${message.msg}`,
+			// 	apn: {
+			// 		text: `@${fSender.name}`,
+			// 	},
+			// 	sound: 'default',
+			// 	userId: livechatRoom.v._id,
 			// });
+			void sendNotificationVisitor({
+				livechatRoom: livechatRoom,
+				sender: fSender,
+				hasMentionToAll:
+					hasMentionToAll,
+				hasMentionToHere: hasMentionToHere,
+				message: message,
+				notificationMessage: notificationMessage,
+				room: room,
+				mentionIds: mentionIds,
+				disableAllMessageNotifications: disableAllMessageNotifications,
+				hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			});
 		}
 		return message;
 

@@ -74,18 +74,11 @@ export async function getPushDataToVisitor({
 	receiver,
 	shouldOmitMessage = true,
 }) {
-	const username = settings.get('Push_show_username_room') ? (settings.get('UI_Use_Real_Name') && senderName) || senderUsername : '';
+	const username =  (settings.get('UI_Use_Real_Name') && senderName) ? senderName : senderUsername;
 
-	const lng = receiver.language || settings.get('Language') || 'vi';
+	const lng = 'vi';
 
-	let messageText;
-	if (shouldOmitMessage && settings.get('Push_request_content_from_server')) {
-		messageText = i18n.t('You_have_a_new_message', { lng });
-	} else if (!settings.get('Push_show_message')) {
-		messageText = i18n.t('You_have_a_new_message', { lng });
-	} else {
-		messageText = notificationMessage;
-	}
+	let messageText = notificationMessage;
 
 	return {
 		payload: {
@@ -97,14 +90,11 @@ export async function getPushDataToVisitor({
 			tmid: message.tmid,
 			...(message.t === 'e2e' && { msg: message.msg }),
 		},
-		roomName:
-			settings.get('Push_show_username_room') && roomCoordinator.getRoomDirectives(room.t).isGroupChat(room)
-				? `#${await roomCoordinator.getRoomName(room.t, room, userId)}`
-				: '',
-		username,
+		roomName: username,
+		username: username,
 		message: messageText,
 		// badge: await Subscriptions.getBadgeCount(userId),
-		category: enableNotificationReplyButton(room, receiver.username) ? CATEGORY_MESSAGE : CATEGORY_MESSAGE_NOREPLY,
+		category: CATEGORY_MESSAGE,
 	};
 }
 
