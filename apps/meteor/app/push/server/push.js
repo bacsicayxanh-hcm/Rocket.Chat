@@ -338,7 +338,7 @@ class PushClass {
 		}
 
 		// Validate the notification
-		//  this._validateDocument(notification);
+		 this._validateDocument(notification);
 
 		try {
 			await this.sendNotification(notification);
