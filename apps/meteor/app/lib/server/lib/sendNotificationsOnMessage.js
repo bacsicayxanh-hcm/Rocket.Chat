@@ -370,7 +370,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 
 		if (livechatRoom) {
-			const fSender = Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
+			const fSender = await Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
 			// await Push.send({
 			// 	from: 'push',
 			// 	title: `${agent.name}`,
