@@ -16,7 +16,7 @@ import {
 } from '../functions/notifications';
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
-import { getPushData, shouldNotifyMobile ,getPushDataToVisitor} from '../functions/notifications/mobile';
+import { getPushData, shouldNotifyMobile, getPushDataToVisitor } from '../functions/notifications/mobile';
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { getMentions } from './notifyUsersOnMessage';
@@ -219,19 +219,17 @@ export const sendNotificationVisitor = async ({
 	// }
 
 	if (!livechatRoom.receiver) {
-		livechatRoom.receiver = [
-			await LivechatVisitors.findOneById(livechatRoom.v._id, {
-				projection: {
-					active: 1,
-					emails: 1,
-					language: 1,
-					status: 1,
-					statusConnection: 1,
-					username: 1,
-					name: 1
-				},
-			}),
-		];
+		livechatRoom.receiver = await 		LivechatVisitors.findOneById(livechatRoom.v._id, {
+			projection: {
+				active: 1,
+				emails: 1,
+				language: 1,
+				status: 1,
+				statusConnection: 1,
+				username: 1,
+				name: 1
+			},
+		});
 	}
 
 	const [receiver] = livechatRoom.receiver;
@@ -375,7 +373,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 
 		if (livechatRoom) {
-			const fSender = Users.findOneById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
+			const fSender = Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
 			// await Push.send({
 			// 	from: 'push',
 			// 	title: `${agent.name}`,
@@ -391,12 +389,12 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				sender: fSender,
 				hasMentionToAll:
 					hasMentionToAll,
-				hasMentionToHere:hasMentionToHere,
+				hasMentionToHere: hasMentionToHere,
 				message: message,
 				notificationMessage: notificationMessage,
 				room: room,
 				mentionIds: mentionIds,
-				 disableAllMessageNotifications: disableAllMessageNotifications,
+				disableAllMessageNotifications: disableAllMessageNotifications,
 				hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
 			});
 		}
