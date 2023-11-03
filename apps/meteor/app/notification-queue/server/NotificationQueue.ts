@@ -159,6 +159,49 @@ class NotificationClass {
 			items,
 		});
 	}
+
+	async scheduleItemVisitor({
+		uid,
+		rid,
+		mid,
+		items,
+		user,
+	}: {
+		uid: string;
+		rid: string;
+		mid: string;
+		items: NotificationItem[];
+		user: Partial<IUser>;
+	}): Promise<void> {
+		
+
+		if (!user) {
+			return;
+		}
+
+		const { statusConnection = 'offline' } = user;
+
+		let schedule: Date | undefined;
+
+		const delay = this.maxScheduleDelaySeconds[statusConnection];
+
+		if (delay < 0) {
+			return;
+		}
+		if (delay > 0) {
+			schedule = new Date();
+			schedule.setSeconds(schedule.getSeconds() + delay);
+		}
+
+		await NotificationQueue.insertOne({
+			uid,
+			rid,
+			mid,
+			ts: new Date(),
+			schedule,
+			items,
+		});
+	}
 }
 
 export const Notification = new NotificationClass();
