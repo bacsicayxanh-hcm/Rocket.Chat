@@ -251,13 +251,15 @@ export const sendNotificationVisitor = async ({
 		}),
 	});
 
-	Notification.scheduleItemVisitor({
-		uid: livechatRoom.v._id,
-		rid: room._id,
-		mid: message._id,
-		items: queueItems,
-		user: receiver,
-	});
+	if (queueItems.length) {
+		Notification.scheduleItemVisitor({
+			uid: livechatRoom.v._id,
+			rid: room._id,
+			mid: message._id,
+			items: queueItems,
+			user: receiver,
+		});
+	}
 };
 
 const project = {
