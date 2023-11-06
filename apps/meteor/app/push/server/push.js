@@ -292,6 +292,7 @@ class PushClass {
 		// If current user not set see if we can set it to the logged in user
 		// this will only run on the client if Meteor.userId is available
 		const currentUser = options.createdBy || '<SERVER>';
+
 		// Rig the notification object
 		const notification = Object.assign(
 			{
@@ -302,11 +303,14 @@ class PushClass {
 			},
 			_.pick(options, 'from', 'title', 'text', 'userId'),
 		);
+
 		// Add extra
 		Object.assign(notification, _.pick(options, 'payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'));
+
 		if (Match.test(options.apn, Object)) {
 			notification.apn = _.pick(options.apn, 'from', 'title', 'text', 'badge', 'sound', 'notId', 'category');
 		}
+
 		if (Match.test(options.gcm, Object)) {
 			notification.gcm = _.pick(
 				options.gcm,
@@ -323,6 +327,14 @@ class PushClass {
 				'actions',
 				'android_channel_id',
 			);
+		}
+
+		if (options.contentAvailable != null) {
+			notification.contentAvailable = options.contentAvailable;
+		}
+
+		if (options.forceStart != null) {
+			notification.forceStart = options.forceStart;
 		}
 
 		// Validate the notification
