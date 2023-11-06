@@ -323,7 +323,18 @@ class PushClass {
 				'actions',
 				'android_channel_id',
 			);
-		}}
+		}
+
+		// Validate the notification
+		 this._validateDocument(notification);
+
+		try {
+			await this.sendNotification(notification);
+		} catch (error) {
+			logger.debug(`Could not send notification id: "${notification._id}", Error: ${error.message}`);
+			logger.debug(error.stack);
+		}
+	}
 }
 
 export const Push = new PushClass();
