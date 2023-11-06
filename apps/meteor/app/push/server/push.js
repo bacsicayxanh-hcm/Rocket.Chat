@@ -301,11 +301,11 @@ class PushClass {
 				sent: false,
 				sending: 0,
 			},
-			_.pick(options, 'from', 'title', 'text', 'userId'),
+			_.pick(options, 'from', 'title', 'text', 'userId','payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'),
 		);
 
 		// Add extra
-		Object.assign(notification, _.pick(options, 'payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'));
+		// Object.assign(notification, _.pick(options, 'payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'));
 
 		if (Match.test(options.apn, Object)) {
 			notification.apn = _.pick(options.apn, 'from', 'title', 'text', 'badge', 'sound', 'notId', 'category');
