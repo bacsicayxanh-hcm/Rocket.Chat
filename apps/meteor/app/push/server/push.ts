@@ -344,42 +344,44 @@ class PushClass {
 		return Match.test(options.gcm, Object);
 	}
 
-	public async send(options: IPushNotificationConfig) {
-		const notification: PendingPushNotification = {
-			createdAt: new Date(),
-			// createdBy is no longer used, but the gateway still expects it
-			createdBy: '<SERVER>',
-			sent: false,
-			sending: 0,
+    public async send(options: IPushNotificationConfig) {
+        const notification: PendingPushNotification = {
+            createdAt: new Date(),
+            // createdBy is no longer used, but the gateway still expects it
+            createdBy: '<SERVER>',
+            sent: false,
+            sending: 0,
 
-			...pick(options, 'from', 'title', 'text', 'userId', 'payload', 'badge', 'sound', 'notId', 'priority'),
+            ...pick(options, 'from', 'title', 'text', 'userId', 'payload', 'badge', 'sound', 'notId', 'priority'),
 
-			...(this.hasApnOptions(options)
-				? {
-						apn: {
-							...pick(options.apn, 'category', 'topicSuffix'),
-						},
-				  }
-				: {}),
-			...(this.hasGcmOptions(options)
-				? {
-						gcm: {
-							...pick(options.gcm, 'image', 'style'),
-						},
-				  }
-				: {}),
-		};
+            ...(this.hasApnOptions(options)
+                ? {
+                    apn: {
+                        ...pick(options.apn, 'category', 'topicSuffix'),
+                    },
+                }
+                : {}),
+            ...(this.hasGcmOptions(options)
+                ? {
+                    gcm: {
+                        ...pick(options.gcm, 'image', 'style'),
+                    },
+                }
+                : {}),
+        };
+        if (Match.test(options.apn, Object)) {
+            notification.apn = _.pick(options.apn, 'from', 'title', 'text', 'badge', 'sound', 'notId', 'category');
+        }
+        // Validate the notification
+        this._validateDocument(notification);
 
-		// Validate the notification
-		 this._validateDocument(notification);
-
-		try {
-			await this.sendNotification(notification);
-		} catch (error: any) {
-			logger.debug(`Could not send notification to user "${notification.userId}", Error: ${error.message}`);
-			logger.debug(error.stack);
-		}
-	}
+        try {
+            await this.sendNotification(notification);
+        } catch (error: any) {
+            logger.debug(`Could not send notification to user "${notification.userId}", Error: ${error.message}`);
+            logger.debug(error.stack);
+        }
+    }
 }
 
 export const Push = new PushClass();
