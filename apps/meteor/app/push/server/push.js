@@ -293,49 +293,19 @@ class PushClass {
 		// this will only run on the client if Meteor.userId is available
 		const currentUser = options.createdBy || '<SERVER>';
 
-		// Rig the notification object
-		const notification = Object.assign(
-			{
-				createdAt: new Date(),
-				createdBy: currentUser,
-				sent: false,
-				sending: 0,
-			},
-			_.pick(options, 'from', 'title', 'text', 'userId','payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'),
-		);
-
-		// Add extra
-		// Object.assign(notification, _.pick(options, 'payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'));
-
-		if (Match.test(options.apn, Object)) {
-			notification.apn = _.pick(options.apn, 'from', 'title', 'text', 'badge', 'sound', 'notId', 'category');
-		}
-
-		if (Match.test(options.gcm, Object)) {
-			notification.gcm = _.pick(
-				options.gcm,
-				'image',
-				'style',
-				'summaryText',
-				'picture',
-				'from',
-				'title',
-				'text',
-				'badge',
-				'sound',
-				'notId',
-				'actions',
-				'android_channel_id',
-			);
-		}
-
-		if (options.contentAvailable != null) {
-			notification.contentAvailable = options.contentAvailable;
-		}
-
-		if (options.forceStart != null) {
-			notification.forceStart = options.forceStart;
-		}
+		// Build the notification object
+		const notification = {
+			createdAt: new Date(),
+			createdBy: currentUser,
+			sent: false,
+			sending: 0,
+			..._.pick(options, 'from', 'title', 'text', 'userId'),
+			..._.pick(options, 'payload', 'badge', 'sound', 'notId', 'delayUntil', 'android_channel_id'),
+			apn: Match.test(options.apn, Object) ? _.pick(options.apn, 'from', 'title', 'text', 'badge', 'sound', 'notId', 'category') : undefined,
+			gcm: Match.test(options.gcm, Object) ? _.pick(options.gcm, 'image', 'style', 'summaryText', 'picture', 'from', 'title', 'text', 'badge', 'sound', 'notId', 'actions', 'android_channel_id') : undefined,
+			contentAvailable: options.contentAvailable,
+			forceStart: options.forceStart,
+		  };
 
 		// Validate the notification
 		 this._validateDocument(notification);
