@@ -235,7 +235,7 @@ export const sendNotificationVisitor = async ({
 
 	const [receiver] = livechatRoom.receiver;
 	
-	const isThread = !!message.tmid && !message.tshow;
+	// const isThread = !!message.tmid && !message.tshow;
 
 	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
 
@@ -244,12 +244,12 @@ export const sendNotificationVisitor = async ({
 	queueItems.push({
 		type: 'push',
 		data: await getPushDataToVisitor({
-			notificationMessage,
 			room,
 			message,
 			userId: livechatRoom.v._id,
 			senderUsername: sender.username,
 			senderName: sender.name,
+			notificationMessage,
 			receiver,
 		}),
 	});
@@ -358,28 +358,28 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 		});
 		if (livechatRoom) {
 			const fSender = await Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
-			await Push.send({
-				from: 'push',
-				title: `${fSender.name}`,
-				text: ` ${message.msg}`,
-				apn: {
-					text: `@${fSender.name}`,
-				},
-				sound: 'default',
-				userId: livechatRoom.v._id,
-			});
-			// void sendNotificationVisitor({
-			// 	livechatRoom,
-			// 	sender: fSender,
-			// 	hasMentionToAll,
-			// 	hasMentionToHere,
-			// 	message,
-			// 	notificationMessage,
-			// 	room,
-			// 	mentionIds,
-			// 	disableAllMessageNotifications,
-			// 	hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			// await Push.send({
+			// 	from: 'push',
+			// 	title: `${fSender.name}`,
+			// 	text: ` ${message.msg}`,
+			// 	apn: {
+			// 		text: `@${fSender.name}`,
+			// 	},
+			// 	sound: 'default',
+			// 	userId: livechatRoom.v._id,
 			// });
+			void sendNotificationVisitor({
+				livechatRoom,
+				sender: fSender,
+				hasMentionToAll,
+				hasMentionToHere,
+				message,
+				notificationMessage,
+				room,
+				mentionIds,
+				disableAllMessageNotifications,
+				hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
+			});
 		}
 		return message;
 
