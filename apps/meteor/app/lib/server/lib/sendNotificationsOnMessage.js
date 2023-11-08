@@ -216,7 +216,7 @@ export const sendNotificationVisitor = async ({
 		  },
 		});
 	
-		const messageText = await parseMessageTextPerUser(notificationMessage, message, receiver);
+		// const messageText = await parseMessageTextPerUser(notificationMessage, message, receiver);
 	
 		const queueItems = [];
 	
@@ -228,7 +228,7 @@ export const sendNotificationVisitor = async ({
 			userId: uid,
 			senderUsername: sender.username,
 			senderName: sender.name,
-			notificationMessage: messageText,
+			notificationMessage: notificationMessage,
 			receiver,
 		  }),
 		});
