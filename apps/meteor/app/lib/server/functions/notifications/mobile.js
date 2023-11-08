@@ -73,30 +73,38 @@ export async function getPushDataToVisitor({
 	notificationMessage,
 	receiver,
 	shouldOmitMessage = true,
-}) {
-	const username =  (settings.get('UI_Use_Real_Name') && senderName) ? senderName : senderUsername;
-
-	const lng = 'vi';
-
-	let messageText = notificationMessage;
-
+  }) {
+	// Determine the username based on settings
+	let username;
+	if (settings.get('UI_Use_Real_Name') && senderName) {
+	  username = senderName;
+	} else {
+	  username = senderUsername;
+	}
+  
+	// Language code 'lng' is declared but not used, you can remove it
+  
+	// Customize the messageText if needed
+	const messageText = notificationMessage;
+  
 	return {
-		payload: {
-			sender: message.u,
-			senderName: username,
-			type: room.t,
-			name: settings.get('Push_show_username_room') ? room.name : '',
-			messageType: message.t,
-			tmid: message.tmid,
-			...(message.t === 'e2e' && { msg: message.msg }),
-		},
-		roomName: username,
-		username: username,
-		message: messageText,
-		// badge: await Subscriptions.getBadgeCount(userId),
-		category: CATEGORY_MESSAGE,
+	  payload: {
+		sender: message.u,
+		senderName: username,
+		type: room.t,
+		name: settings.get('Push_show_username_room') ? room.name : '',
+		messageType: message.t,
+		tmid: message.tmid,
+		...(message.t === 'e2e' && { msg: message.msg }),
+	  },
+	  roomName: username,
+	  username: username,
+	  message: messageText,
+	  // badge: await Subscriptions.getBadgeCount(userId),
+	  category: CATEGORY_MESSAGE,
 	};
-}
+  }
+  
 
 
 export function shouldNotifyMobile({

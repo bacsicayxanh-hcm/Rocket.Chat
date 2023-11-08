@@ -184,82 +184,68 @@ export const sendNotification = async ({
 	}
 };
 export const sendNotificationVisitor = async ({
-	livechatRoom,
+	uid,
 	sender,
-	hasReplyToThread,
-	hasMentionToAll,
-	hasMentionToHere,
 	message,
 	notificationMessage,
 	room,
-	mentionIds,
-	disableAllMessageNotifications,
 }) => {
 	if (TroubleshootDisableNotifications === true) {
 		return;
 	}
 
-	if (!livechatRoom.v._id) {
+	if (!uid) {
 		return;
 	}
 
 	// don't notify the sender
-	if (livechatRoom.v._id === sender._id) {
+	if (uid === sender._id) {
 		return;
 	}
-
-	const hasMentionToUser = mentionIds.includes(livechatRoom.v._id);
-
-	// mute group notifications (@here and @all) if not directly mentioned as well
-	// if (!hasMentionToUser && !hasReplyToThread && subscription.muteGroupMentions && (hasMentionToAll || hasMentionToHere)) {
-	// 	return;
-	// }
-
-	if (!livechatRoom.receiver) {
-		livechatRoom.receiver = await LivechatVisitors.findOneById(livechatRoom.v._id, {
-			projection: {
-				_id: 1,
-				active: 1,
-				emails: 1,
-				language: 1,
-				status: 1,
-				statusConnection: 1,
-				username: 1,
-				name: 1
-			},
+	try {
+		let receiver = await LivechatVisitors.findOneById(uid, {
+		  projection: {
+			_id: 1,
+			active: 1,
+			emails: 1,
+			language: 1,
+			status: 1,
+			statusConnection: 1,
+			username: 1,
+			name: 1,
+		  },
 		});
-	}
-
-	const [receiver] = livechatRoom.receiver;
 	
-	// const isThread = !!message.tmid && !message.tshow;
-
-	notificationMessage = await parseMessageTextPerUser(notificationMessage, message, receiver);
-
-	const queueItems = [];
-
-	queueItems.push({
-		type: 'push',
-		data: await getPushDataToVisitor({
+		const messageText = await parseMessageTextPerUser(notificationMessage, message, receiver);
+	
+		const queueItems = [];
+	
+		queueItems.push({
+		  type: 'push',
+		  data: await getPushDataToVisitor({
 			room,
 			message,
-			userId: livechatRoom.v._id,
+			userId: uid,
 			senderUsername: sender.username,
 			senderName: sender.name,
-			notificationMessage,
+			notificationMessage: messageText,
 			receiver,
-		}),
-	});
-
-	if (queueItems.length) {
-		Notification.scheduleItemVisitor({
-			uid: livechatRoom.v._id,
+		  }),
+		});
+	
+		if (queueItems.length) {
+		  Notification.scheduleItemVisitor({
+			uid: uid,
 			rid: room._id,
 			mid: message._id,
 			items: queueItems,
 			user: receiver,
-		});
-	}
+		  });
+		}
+	  } catch (error) {
+		// Handle any errors here
+		console.error(error);
+	  }
 };
 
 const project = {
@@ -366,16 +352,11 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			// 	userId: livechatRoom.v._id,
 			// });
 			void sendNotificationVisitor({
-				livechatRoom,
+				uid: livechatRoom.u._id,
 				sender: fSender,
-				hasMentionToAll,
-				hasMentionToHere,
 				message,
 				notificationMessage,
 				room,
-				mentionIds,
-				disableAllMessageNotifications,
-				hasReplyToThread: usersInThread && usersInThread.includes(livechatRoom.v._id),
 			});
 		}
 		return message;
