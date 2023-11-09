@@ -241,7 +241,6 @@ export const sendMessage = async function (user, message, room, upsert = false) 
 	parseUrlsInMessage(message);
 
 	message = await callbacks.run('beforeSaveMessage', message, room);
-	sendAllNotifications(message, room);
 
 	if (message) {
 		if (message.t === 'otr') {
