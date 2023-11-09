@@ -352,7 +352,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			// 	userId: livechatRoom.v._id,
 			// });
 			void sendNotificationVisitor({
-				uid: livechatRoom.u._id,
+				uid: livechatRoom.v._id,
 				sender: fSender,
 				message,
 				notificationMessage,
