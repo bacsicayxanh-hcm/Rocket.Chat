@@ -161,6 +161,10 @@ jobs:
         working-directory: ./apps/meteor
         run: meteor reset
 
+      - name: Remove build
+        run: |
+          rm -r -f /tmp/dist
+     
       - name: Build Rocket.Chat From Pull Request
         if: startsWith(github.ref, 'refs/pull/') == true
         env:
