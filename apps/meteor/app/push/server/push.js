@@ -161,8 +161,9 @@ class PushClass {
 	}
 
 	async sendNotificationGateway(app, notification, countApn, countGcm) {
+		logger.debug('GateWay Length: ',this.options.gateways.length);
 		for (const gateway of this.options.gateways) {
-			logger.debug('send to token', app.token);
+			logger.debug('GateWay ',gateway,' send to token', app.token);
 
 			if (app.token.apn) {
 				countApn.push(app._id);
