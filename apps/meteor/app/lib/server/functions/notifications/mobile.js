@@ -1,4 +1,4 @@
-import { Subscriptions } from '@rocket.chat/models';
+import { LivechatRooms, Subscriptions } from '@rocket.chat/models';
 
 import { settings } from '../../../../settings/server';
 import { roomCoordinator } from '../../../../../server/lib/rooms/roomCoordinator';
@@ -86,6 +86,18 @@ export async function getPushDataToVisitor({
   
 	// Customize the messageText if needed
 	const messageText = notificationMessage;
+
+	let rooms = await LivechatRooms.findByVisitorId(userId,{
+		projection: {
+			unread: 1,
+		}
+	}).toArray();
+
+	// var fRoom = LivechatRooms.findByVisitorId(userId).toArray();
+	countUnread = 0;
+	rooms.forEach((element) => {
+		countUnread += element.unread ?? 0;
+	  });
   
 	return {
 	  payload: {
@@ -100,7 +112,7 @@ export async function getPushDataToVisitor({
 	  roomName: username,
 	  username: username,
 	  message: messageText,
-	  // badge: await Subscriptions.getBadgeCount(userId),
+	  badge: countUnread,
 	  category: CATEGORY_MESSAGE,
 	};
   }
