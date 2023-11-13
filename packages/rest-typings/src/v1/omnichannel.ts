@@ -2507,6 +2507,25 @@ export const isGETLivechatAgentsAgentIdDepartmentsParams = ajv.compile<GETLivech
 	GETLivechatAgentsAgentIdDepartmentsParamsSchema,
 );
 
+
+type GETBadgeParams = {
+	token: string;
+};
+
+const GETBadgeParamsSchema = {
+	type: 'object',
+	properties: {
+		token: {
+			type: 'string',
+		},	
+	},
+	required: ['token'],
+	additionalProperties: false,
+};
+
+export const isGETBadgeParams = ajv.compile<GETBadgeParams>(GETBadgeParamsSchema);
+
+
 type GETBusinessHourParams = { _id?: string; type?: string };
 
 const GETBusinessHourParamsSchema = {
@@ -3343,6 +3362,9 @@ export type OmnichannelEndpoints = {
 	};
 	'/v1/livechat/room.openOrCreate': {
 		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
+	};
+	'/v1/livechat/getBadge': {
+		GET: (params: GETBadgeParams) => { unread: int; success: boolean };
 	};
 	'/v1/livechat/room.close': {
 		POST: (params: POSTLivechatRoomCloseParams) => { rid: string; comment: string };
