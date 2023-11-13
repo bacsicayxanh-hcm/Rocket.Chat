@@ -7,7 +7,7 @@ import { findGuest } from '../lib/livechat';
 
 API.v1.addRoute('livechat/getBadge', {
     async get() {
-        const { token } = this.bodyParams;
+        const { token } = this.queryParams;
         if (!token) {
             throw new Error('invalid-token');
         }
