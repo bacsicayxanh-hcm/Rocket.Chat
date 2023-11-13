@@ -168,12 +168,12 @@ class PushClass {
 			if (app.token.apn) {
 				countApn.push(app._id);
 				notification.topic = app.appName;
-				return this.sendGatewayPush(gateway, 'apn', app.token.apn, notification);
+				await this.sendGatewayPush(gateway, 'apn', app.token.apn, notification);
 			}
 
 			if (app.token.gcm) {
 				countGcm.push(app._id);
-				return this.sendGatewayPush(gateway, 'gcm', app.token.gcm, notification);
+				await this.sendGatewayPush(gateway, 'gcm', app.token.gcm, notification);
 			}
 		}
 	}
