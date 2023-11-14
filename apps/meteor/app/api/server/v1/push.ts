@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from '@rocket.chat/random';
 import { Match, check } from 'meteor/check';
 import { Messages, AppsTokens, Users, Rooms, LivechatVisitors } from '@rocket.chat/models';
-
 import { API } from '../api';
 import PushNotification from '../../../push-notifications/server/lib/PushNotification';
 import { canAccessRoomAsync } from '../../../authorization/server/functions/canAccessRoom';
@@ -146,6 +145,16 @@ API.v1.addRoute(
 				// 	});
 				// }
 				if (!doc) {
+					doc = await AppsTokens.findOne({
+						$and: [
+							{ token: token }, // Match token
+							{ appName: appName }, // Match appName
+							{ token: { $exists: true } }, // Make sure token exists
+						],
+					});
+				}
+
+				if (!doc) {
 					doc = {
 						// _id: deviceId,
 						token: { [type]: value },
@@ -161,30 +170,32 @@ API.v1.addRoute(
 					};
 					await AppsTokens.insertOne(doc);
 				} else {
-
-
 					await AppsTokens.updateOne({ _id: doc._id }, {
 						$set: {
 							updatedAt: new Date(),
 							token: { [type]: value },
 							authToken: token,
+							userId:visitor._id,
 						},
 					});
 				}
-				const removed = (
-					await AppsTokens.deleteMany({
-						$and: [
-							{ _id: { $ne: doc._id } },
-							{ token: doc.token }, // Match token
-							{ appName: doc.appName }, // Match appName
-							{ token: { $exists: true } }, // Make sure token exists
-						],
-					})
-				).deletedCount;
-				if (removed) {
-					// logger.debug(`Removed ${removed} existing app items`);
+				if (doc && doc.token) {
+					const removed = (
+						await AppsTokens.deleteMany({
+							$and: [
+								{ _id: { $ne: doc._id } },
+								{ token: doc.token }, // Match token
+								{ appName: doc.appName }, // Match appName
+								{ token: { $exists: true } }, // Make sure token exists
+							],
+						})
+					).deletedCount;
+					if (removed) {
+						// logger.debug(`Removed ${removed} existing app items`);
+					}
+				
 				}
-			
+				
 				return API.v1.success({ result: doc });
 			} catch (error) {
 				return API.v1.failure(error);
@@ -202,25 +213,23 @@ API.v1.addRoute(
 			if (!visitor) {
 				throw new Error('visitor-token-invalid');
 			}
-			const affectedRecords = (
-				await AppsTokens.deleteMany({
-					$or: [
-						{
-							'token.apn': deviceToken,
-						},
-						{
-							'token.gcm': deviceToken,
-						},
-						{
-							'token.fcm': deviceToken,
-						},
-					],
-					userId: visitor._id,
-				})
-			).deletedCount;
-			if (affectedRecords === 0) {
-				return API.v1.notFound();
-			}
+			await AppsTokens.deleteMany({
+				$or: [
+					{
+						'token.apn': deviceToken,
+					},
+					{
+						'token.gcm': deviceToken,
+					},
+					{
+						'token.fcm': deviceToken,
+					},
+				],
+				userId: visitor._id,
+			});
+			// if (affectedRecords === 0) {
+			// 	return API.v1.notFound();
+			// }
 			return API.v1.success();
 		},
 	},
