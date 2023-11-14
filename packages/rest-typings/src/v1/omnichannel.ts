@@ -3364,7 +3364,7 @@ export type OmnichannelEndpoints = {
 		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
 	};
 	'/v1/livechat/getBadge': {
-		GET: (params: GETBadgeParams) => { unread: int; success: boolean };
+		GET: (params: GETBadgeParams) => { unread: string; success: boolean };
 	};
 	'/v1/livechat/room.close': {
 		POST: (params: POSTLivechatRoomCloseParams) => { rid: string; comment: string };

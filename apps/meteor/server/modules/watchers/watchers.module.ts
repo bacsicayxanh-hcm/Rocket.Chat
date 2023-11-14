@@ -35,7 +35,6 @@ import {
 	PbxEvents,
 	Permissions,
 	LivechatPriority,
-	LiveChatRooms,
 } from '@rocket.chat/models';
 import type { EventSignatures } from '@rocket.chat/core-services';
 

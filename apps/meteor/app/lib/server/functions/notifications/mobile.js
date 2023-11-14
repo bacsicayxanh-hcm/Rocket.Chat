@@ -94,7 +94,7 @@ export async function getPushDataToVisitor({
 	}).toArray();
 
 	// var fRoom = LivechatRooms.findByVisitorId(userId).toArray();
-	countUnread = 0;
+	let countUnread  = 0;
 	rooms.forEach((element) => {
 		countUnread += element.unread ?? 0;
 	  });
