@@ -8,6 +8,7 @@ import { initAPN, sendAPN } from './apn';
 import { sendGCM } from './gcm';
 import { logger } from './logger';
 import { settings } from '../../settings/server';
+import { isExists } from 'date-fns';
 
 export const _matchToken = Match.OneOf({ apn: String }, { gcm: String });
 
@@ -164,17 +165,24 @@ class PushClass {
 		logger.debug('GateWay Length: ',this.options.gateways.length);
 		for (const gateway of this.options.gateways) {
 			logger.debug('GateWay ',gateway,' send to token', app.token);
+			let appNameIsBSCX = app.appName?.includes("bacsicayxanh");
+			let gatewayIsBSCX = gateway.includes("bacsicayxanh");
+			let isRun = (appNameIsBSCX === gatewayIsBSCX && (appNameIsBSCX!== undefined)) ? true : false;
 
-			if (app.token.apn) {
-				countApn.push(app._id);
-				notification.topic = app.appName;
-				await this.sendGatewayPush(gateway, 'apn', app.token.apn, notification);
+			if (isRun) {
+				if (app.token.apn) {
+					countApn.push(app._id);
+					notification.topic = app.appName;
+					await this.sendGatewayPush(gateway, 'apn', app.token.apn, notification);
+				}
+	
+				if (app.token.gcm) {
+					countGcm.push(app._id);
+					await this.sendGatewayPush(gateway, 'gcm', app.token.gcm, notification);
+				}
 			}
 
-			if (app.token.gcm) {
-				countGcm.push(app._id);
-				await this.sendGatewayPush(gateway, 'gcm', app.token.gcm, notification);
-			}
+			
 		}
 	}
 
