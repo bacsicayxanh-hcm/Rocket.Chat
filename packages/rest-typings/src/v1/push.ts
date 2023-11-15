@@ -93,7 +93,7 @@ export type PushEndpoints = {
 	};
 	'/v1/registerVisitorDeviceToken': {
 		POST: (payload: RegisterVisitorDeviceTokenProps) => { result: IPushToken };
-		DELETE: (payload: { token: string }) => void;
+		DELETE: (payload: { deviceToken: string, visitorToken : string}) => void;
 	};
 	'/v1/push.get': {
 		GET: (params: PushGetProps) => {

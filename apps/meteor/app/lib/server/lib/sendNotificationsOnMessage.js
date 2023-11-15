@@ -11,7 +11,7 @@ import { settings } from '../../../settings/server';
 import {
 	callJoinRoom,
 	messageContainsHighlight,
-	parseMessageTextPerUser,
+	parseMessageTextPerUser, parseMessageTextPerUserForVisitor,
 	replaceMentionedUsernamesWithFullNames,
 } from '../functions/notifications';
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
@@ -219,7 +219,7 @@ export const sendNotificationVisitor = async ({
 		  },
 		});
 	
-		// const messageText = await parseMessageTextPerUser(notificationMessage, message, receiver);
+		 notificationMessage = await parseMessageTextPerUserForVisitor(notificationMessage, message);
 	
 		const queueItems = [];
 	
@@ -231,7 +231,7 @@ export const sendNotificationVisitor = async ({
 			userId: uid,
 			senderUsername: sender.username,
 			senderName: sender.name,
-			notificationMessage: notificationMessage,
+			notificationMessage,
 			receiver,
 		  }),
 		});

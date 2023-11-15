@@ -164,12 +164,12 @@ class PushClass {
 	async sendNotificationGateway(app, notification, countApn, countGcm) {
 		logger.debug('GateWay Length: ',this.options.gateways.length);
 		for (const gateway of this.options.gateways) {
-			logger.debug('GateWay ',gateway,' send to token', app.token);
 			let appNameIsBSCX = app.appName?.includes("bacsicayxanh");
 			let gatewayIsBSCX = gateway.includes("bacsicayxanh");
 			let isRun = (appNameIsBSCX === gatewayIsBSCX && (appNameIsBSCX!== undefined)) ? true : false;
 
 			if (isRun) {
+				logger.debug('GateWay ',gateway,' send to token', app.token);
 				if (app.token.apn) {
 					countApn.push(app._id);
 					notification.topic = app.appName;
