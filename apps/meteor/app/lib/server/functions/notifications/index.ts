@@ -1,5 +1,5 @@
 import { escapeRegExp } from '@rocket.chat/string-helpers';
-import type { IMessage, IUser } from '@rocket.chat/core-typings';
+import type { IMessage, IUser} from '@rocket.chat/core-typings';
 import { isFileAttachment, isFileImageAttachment } from '@rocket.chat/core-typings';
 
 import { callbacks } from '../../../../../lib/callbacks';
@@ -14,6 +14,22 @@ import { i18n } from '../../../../../server/lib/i18n';
  */
 export async function parseMessageTextPerUser(messageText: string, message: IMessage, receiver: IUser): Promise<string> {
 	const lng = receiver.language || settings.get('Language') || 'en';
+
+	const firstAttachment = message.attachments?.[0];
+	if (!message.msg && firstAttachment && isFileAttachment(firstAttachment) && isFileImageAttachment(firstAttachment)) {
+		return firstAttachment.image_type ? i18n.t('User_uploaded_image', { lng }) : i18n.t('User_uploaded_file', { lng });
+	}
+
+	if (message.msg && message.t === 'e2e') {
+		return i18n.t('Encrypted_message', { lng });
+	}
+
+	// perform processing required before sending message as notification such as markdown filtering
+	return callbacks.run('renderNotification', messageText);
+}
+
+export async function parseMessageTextPerUserForVisitor(messageText: string, message: IMessage,): Promise<string> {
+	const lng = 'vi';
 
 	const firstAttachment = message.attachments?.[0];
 	if (!message.msg && firstAttachment && isFileAttachment(firstAttachment) && isFileImageAttachment(firstAttachment)) {

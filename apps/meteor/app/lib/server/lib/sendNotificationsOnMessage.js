@@ -8,7 +8,7 @@ import { callbacks } from '../../../../lib/callbacks';
 import {
 	callJoinRoom,
 	messageContainsHighlight,
-	parseMessageTextPerUser,
+	parseMessageTextPerUser, parseMessageTextPerUserForVisitor,
 	replaceMentionedUsernamesWithFullNames,
 } from '../functions/notifications';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
@@ -216,7 +216,7 @@ export const sendNotificationVisitor = async ({
 		  },
 		});
 	
-		// const messageText = await parseMessageTextPerUser(notificationMessage, message, receiver);
+		 notificationMessage = await parseMessageTextPerUserForVisitor(notificationMessage, message);
 	
 		const queueItems = [];
 	
@@ -228,7 +228,7 @@ export const sendNotificationVisitor = async ({
 			userId: uid,
 			senderUsername: sender.username,
 			senderName: sender.name,
-			notificationMessage: notificationMessage,
+			notificationMessage,
 			receiver,
 		  }),
 		});
