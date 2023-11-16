@@ -131,7 +131,7 @@ API.v1.addRoute(
 				if (!token || typeof token !== 'string') {
 					throw new Error('Invalid token');
 				}
-				if (!type || typeof token !== 'string' ||type !== 'gcm') {
+				if (!type || typeof token !== 'string' || type !== 'gcm') {
 					throw new Error('Invalid device type');
 				}
 				if (!value || typeof value !== 'string') {
