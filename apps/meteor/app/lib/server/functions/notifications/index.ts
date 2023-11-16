@@ -31,7 +31,7 @@ export async function parseMessageTextPerUser(messageText: string, message: IMes
 }
 
 export async function parseMessageTextPerUserForVisitor(messageText: string, message: IMessage,): Promise<string> {
-	const lng = 'vi';
+	const lng = 'vi-VN';
 
 	const firstAttachment = message.attachments?.[0];
 	if (!message.msg && firstAttachment && isFileAttachment(firstAttachment) && isFileImageAttachment(firstAttachment)) {
