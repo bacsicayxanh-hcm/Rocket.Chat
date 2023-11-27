@@ -1,4 +1,3 @@
-import { Subscriptions, Users } from '@rocket.chat/models';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
 import { Subscriptions, Users, LivechatRooms, LivechatVisitors } from '@rocket.chat/models';
@@ -17,13 +16,8 @@ import {
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
 import { getPushData, shouldNotifyMobile, getPushDataToVisitor } from '../functions/notifications/mobile';
-import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
-import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { getMentions } from './notifyUsersOnMessage';
-
 import { Logger } from '../../../logger/server';
-import { Push } from '../../../push/server';
-
 
 const logger = new Logger('SendNotification');
 

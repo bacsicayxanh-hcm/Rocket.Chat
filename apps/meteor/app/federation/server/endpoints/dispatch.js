@@ -6,7 +6,7 @@ import EJSON from 'ejson';
 import { API } from '../../../api/server';
 import { FileUpload } from '../../../file-upload/server';
 import { deleteRoom } from '../../../lib/server/functions/deleteRoom';
-import { notifyUsersOnMessage } from '../../../lib/server/lib/notifyUsersOnMessage';
+import { notifyUsersOnMessage } from '../../../lib/server/lib/notifyNUsersOnMessage';
 import { sendAllNotifications } from '../../../lib/server/lib/sendNotificationsOnMessage';
 import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
 import { getUpload, requestEventsFromLatest } from '../handler';
@@ -17,10 +17,6 @@ import { isFederationEnabled } from '../lib/isFederationEnabled';
 import { serverLogger } from '../lib/logger';
 import { normalizers } from '../normalizers';
 // import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
-import { getUpload, requestEventsFromLatest } from '../handler';
-import { notifyUsersOnMessage } from '../../../lib/server/lib/notifyUsersOnMessage';
-import { sendAllNotifications } from '../../../lib/server/lib/sendNotificationsOnMessage';
-import { processThreads } from '../../../threads/server/hooks/aftersavemessage';
 
 const eventHandlers = {
 	//

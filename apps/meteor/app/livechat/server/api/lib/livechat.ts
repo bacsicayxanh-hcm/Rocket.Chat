@@ -154,7 +154,6 @@ export function getRoomWithoutCheckOnlineAgent({
 
 
 export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: true } | ILivechatAgent> {
-export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: boolean } | ILivechatAgent> {
 	return normalizeAgent(agentId);
 }
 
