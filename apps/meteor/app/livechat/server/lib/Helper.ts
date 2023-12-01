@@ -1,4 +1,5 @@
 import {RoutingManager} from './RoutingManager';
+import { Logger } from '@rocket.chat/logger';
 
 const logger = new Logger('LivechatHelper');
 export const allowAgentSkipQueue = (agent: SelectedAgent) => {

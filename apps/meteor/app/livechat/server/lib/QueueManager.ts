@@ -17,11 +17,11 @@ import {
     createLivechatRoom,
     createLivechatRoomWithAgent
 } from './Helper';
-import {Logger} from '../../../logger/server';
+import { Logger } from '@rocket.chat/logger';
 import {RoutingManager} from './RoutingManager';
 import { checkServiceStatus, createLivechatRoom, createLivechatInquiry } from './Helper';
 import { callbacks } from '../../../../lib/callbacks';
-import { Logger } from '../../../logger/server';
+import { Logger } from '@rocket.chat/logger';
 import { RoutingManager } from './RoutingManager';
 
 const logger = new Logger('QueueManager');

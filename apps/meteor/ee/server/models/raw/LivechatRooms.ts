@@ -9,9 +9,9 @@ import { LivechatPriorityWeight, DEFAULT_SLA_CONFIG } from '@rocket.chat/core-ty
 import type { ILivechatRoomsModel } from '@rocket.chat/model-typings';
 import type { FindCursor, UpdateResult, Document, FindOptions, Db, Collection, Filter, AggregationCursor } from 'mongodb';
 
-import { readSecondaryPreferred } from '../../../../server/database/readSecondaryPreferred';
-import { LivechatRoomsRaw } from '../../../../server/models/raw/LivechatRooms';
-import { queriesLogger } from '../../../app/livechat-enterprise/server/lib/logger';
+import { readSecondaryPreferred } from '/server/database/readSecondaryPreferred';
+import { LivechatRoomsRaw } from '/server/models/raw/LivechatRooms';
+import { queriesLogger } from '/ee/app/livechat-enterprise/server/lib/logger';
 
 declare module '@rocket.chat/model-typings' {
 	interface ILivechatRoomsModel {

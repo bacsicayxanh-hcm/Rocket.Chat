@@ -17,10 +17,9 @@ import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notificatio
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
 import { getPushData, shouldNotifyMobile, getPushDataToVisitor } from '../functions/notifications/mobile';
 import { getMentions } from './notifyUsersOnMessage';
-import { Logger } from '../../../logger/server';
+import { Logger } from '@rocket.chat/logger';
 
 const logger = new Logger('SendNotification');
-
 
 let TroubleshootDisableNotifications;
 
