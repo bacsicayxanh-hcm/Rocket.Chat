@@ -1,4 +1,4 @@
-import { Box, States, StatesIcon, StatesTitle, StatesSubtitle, ButtonGroup, Button, Icon } from '@rocket.chat/fuselage';
+import { Box, States, StatesIcon, StatesTitle, StatesSubtitle, ButtonGroup, Button } from '@rocket.chat/fuselage';
 import { useResizeObserver } from '@rocket.chat/fuselage-hooks';
 import { useTranslation, useSetting } from '@rocket.chat/ui-contexts';
 import type { ReactElement } from 'react';
@@ -67,9 +67,9 @@ const OutlookEventsList = ({ onClose, changeRoute }: OutlookEventsListProps): Re
 						</Box>
 					</ContextualbarContent>
 					<ContextualbarFooter>
-						<ButtonGroup mbs='x8' stretch>
-							<Button primary disabled={syncOutlookCalendar.isLoading} onClick={() => syncOutlookCalendar.mutate()}>
-								{syncOutlookCalendar.isLoading ? t('Please_wait') : t('Login')}
+						<ButtonGroup mbs={8} stretch>
+							<Button primary loading={syncOutlookCalendar.isLoading} onClick={() => syncOutlookCalendar.mutate()}>
+								{t('Login')}
 							</Button>
 						</ButtonGroup>
 					</ContextualbarFooter>
@@ -116,16 +116,15 @@ const OutlookEventsList = ({ onClose, changeRoute }: OutlookEventsListProps): Re
 						<ButtonGroup stretch>
 							{authEnabled && <Button onClick={changeRoute}>{t('Calendar_settings')}</Button>}
 							{outlookUrl && (
-								<Button onClick={() => window.open(outlookUrl, '_blank')}>
-									<Icon mie='x4' name='new-window' />
-									<Box is='span'>{t('Open_Outlook')}</Box>
+								<Button icon='new-window' onClick={() => window.open(outlookUrl, '_blank')}>
+									{t('Open_Outlook')}
 								</Button>
 							)}
 						</ButtonGroup>
 						{hasOutlookMethods && (
-							<ButtonGroup mbs='x8' stretch>
-								<Button primary disabled={syncOutlookCalendar.isLoading} onClick={() => syncOutlookCalendar.mutate()}>
-									{syncOutlookCalendar.isLoading ? t('Sync_in_progress') : t('Sync')}
+							<ButtonGroup mbs={8} stretch>
+								<Button primary loading={syncOutlookCalendar.isLoading} onClick={() => syncOutlookCalendar.mutate()}>
+									{t('Sync')}
 								</Button>
 							</ButtonGroup>
 						)}

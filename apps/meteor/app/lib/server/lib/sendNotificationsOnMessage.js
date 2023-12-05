@@ -1,29 +1,18 @@
+import { Room } from '@rocket.chat/core-services';
 import { Meteor } from 'meteor/meteor';
 import moment from 'moment';
 import { Subscriptions, Users, LivechatRooms, LivechatVisitors } from '@rocket.chat/models';
 
-import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
-import { settings } from '../../../settings/server';
 import { callbacks } from '../../../../lib/callbacks';
-import {
-	callJoinRoom,
-	messageContainsHighlight,
-	parseMessageTextPerUser, parseMessageTextPerUserForVisitor,
-	replaceMentionedUsernamesWithFullNames,
-} from '../functions/notifications';
+import { roomCoordinator } from '../../../../server/lib/rooms/roomCoordinator';
+import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
+import { Notification } from '../../../notification-queue/server/NotificationQueue';
+import { settings } from '../../../settings/server';
+import { messageContainsHighlight, parseMessageTextPerUser, replaceMentionedUsernamesWithFullNames } from '../functions/notifications';
+import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
 import { getPushData, shouldNotifyMobile, getPushDataToVisitor } from '../functions/notifications/mobile';
-import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
-import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { getMentions } from './notifyUsersOnMessage';
-import { roomCoordinator } from '../../../../server/lib/rooms/roomCoordinator';
-
-import { Logger } from '../../../logger/server';
-import { Push } from '../../../push/server';
-
-
-const logger = new Logger('SendNotification');
-
 
 let TroubleshootDisableNotifications;
 
@@ -215,11 +204,11 @@ export const sendNotificationVisitor = async ({
 			name: 1,
 		  },
 		});
-	
+
 		 notificationMessage = await parseMessageTextPerUserForVisitor(notificationMessage, message);
-	
+
 		const queueItems = [];
-	
+
 		queueItems.push({
 		  type: 'push',
 		  data: await getPushDataToVisitor({
@@ -232,7 +221,7 @@ export const sendNotificationVisitor = async ({
 			receiver,
 		  }),
 		});
-	
+
 		if (queueItems.length) {
 		  Notification.scheduleItemVisitor({
 			uid: uid,
@@ -487,7 +476,7 @@ export async function sendAllNotifications(message, room) {
 
 		const users = await Promise.all(
 			mentions.map(async (userId) => {
-				await callJoinRoom(userId, room._id);
+				await Room.join({ room, user: { _id: userId } });
 
 				return userId;
 			}),

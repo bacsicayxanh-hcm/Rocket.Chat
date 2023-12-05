@@ -16,3 +16,4 @@ import './v1/integration';
 import './v1/roomOpenOrCreate';
 import './v1/roomRead';
 import './v1/getBadge';
+import './v1/statistics';

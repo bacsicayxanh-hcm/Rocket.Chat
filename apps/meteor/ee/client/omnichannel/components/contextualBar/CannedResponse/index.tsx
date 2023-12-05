@@ -1,19 +1,22 @@
 import { useDebouncedValue, useLocalStorage, useMutableCallback } from '@rocket.chat/fuselage-hooks';
 import { useSetModal, useRouter } from '@rocket.chat/ui-contexts';
-import type { FC, MouseEvent } from 'react';
+import type { MouseEvent } from 'react';
 import React, { memo, useCallback, useMemo, useState } from 'react';
 
 import { useRecordList } from '../../../../../../client/hooks/lists/useRecordList';
+import { useIsRoomOverMacLimit } from '../../../../../../client/hooks/omnichannel/useIsRoomOverMacLimit';
 import { AsyncStatePhase } from '../../../../../../client/lib/asyncState';
 import { useChat } from '../../../../../../client/views/room/contexts/ChatContext';
 import { useRoom } from '../../../../../../client/views/room/contexts/RoomContext';
+import { useRoomToolbox } from '../../../../../../client/views/room/contexts/RoomToolboxContext';
 import { useCannedResponseFilterOptions } from '../../../hooks/useCannedResponseFilterOptions';
 import { useCannedResponseList } from '../../../hooks/useCannedResponseList';
 import CreateCannedResponse from '../../CannedResponse/modals';
 import CannedResponseList from './CannedResponseList';
 
-export const WrapCannedResponseList: FC<{ tabBar: any }> = ({ tabBar }) => {
+export const WrapCannedResponseList = () => {
 	const room = useRoom();
+	const { closeTab } = useRoomToolbox();
 	const router = useRouter();
 	const setModal = useSetModal();
 
@@ -21,6 +24,8 @@ export const WrapCannedResponseList: FC<{ tabBar: any }> = ({ tabBar }) => {
 
 	const [text, setText] = useState('');
 	const [type, setType] = useLocalStorage('canned-response-list-type', 'all');
+
+	const isRoomOverMacLimit = useIsRoomOverMacLimit(room);
 
 	const handleTextChange = useCallback((event) => {
 		setText(event.currentTarget.value);
@@ -65,13 +70,14 @@ export const WrapCannedResponseList: FC<{ tabBar: any }> = ({ tabBar }) => {
 			loadMoreItems={loadMoreItems}
 			cannedItems={items}
 			itemCount={itemCount}
-			onClose={tabBar.close}
+			onClose={closeTab}
 			loading={phase === AsyncStatePhase.LOADING}
 			options={options}
 			text={text}
 			setText={handleTextChange}
 			type={type}
 			setType={setType}
+			isRoomOverMacLimit={isRoomOverMacLimit}
 			onClickUse={onClickUse}
 			onClickItem={onClickItem}
 			onClickCreate={onClickCreate}

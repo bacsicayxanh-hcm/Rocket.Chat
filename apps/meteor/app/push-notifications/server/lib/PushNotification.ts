@@ -1,14 +1,14 @@
-import { Meteor } from 'meteor/meteor';
 import type { IMessage, IPushNotificationConfig, IRoom, IUser } from '@rocket.chat/core-typings';
 import { Users } from '@rocket.chat/models';
+import { Meteor } from 'meteor/meteor';
 
-import { Push } from '../../../push/server';
-import { settings } from '../../../settings/server';
-import { metrics } from '../../../metrics/server';
+import { callbacks } from '../../../../lib/callbacks';
 import { RocketChatAssets } from '../../../assets/server';
 import { replaceMentionedUsernamesWithFullNames, parseMessageTextPerUser } from '../../../lib/server/functions/notifications';
-import { callbacks } from '../../../../lib/callbacks';
 import { getPushData } from '../../../lib/server/functions/notifications/mobile';
+import { metrics } from '../../../metrics/server';
+import { Push } from '../../../push/server';
+import { settings } from '../../../settings/server';
 
 type PushNotificationData = {
 	rid: string;
@@ -66,7 +66,7 @@ class PushNotification {
 		// const text = !idOnly && roomName !== '' ? `${username}: ${message}` : message;
 		const text = message;
 
-		const config: IPushNotificationConfig = {
+		return {
 			from: 'push',
 			badge,
 			sound: 'default',
@@ -85,15 +85,8 @@ class PushNotification {
 				style: 'inbox',
 				image: RocketChatAssets.getURL('Assets_favicon_192'),
 			},
+			...(category !== '' ? { apn: { category } } : {}),
 		};
-
-		if (category !== '') {
-			config.apn = {
-				category,
-			};
-		}
-
-		return config;
 	}
 
 	async send({ rid, uid, mid, roomName, username, message, payload, badge = 1, category }: PushNotificationData): Promise<void> {

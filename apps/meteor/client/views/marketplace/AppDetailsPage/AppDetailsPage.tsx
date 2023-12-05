@@ -1,6 +1,6 @@
 import type { ISetting } from '@rocket.chat/apps-engine/definition/settings';
 import type { App } from '@rocket.chat/core-typings';
-import { Button, ButtonGroup, Box, Throbber } from '@rocket.chat/fuselage';
+import { Button, ButtonGroup, Box } from '@rocket.chat/fuselage';
 import { useMutableCallback } from '@rocket.chat/fuselage-hooks';
 import { useTranslation, useRouteParameter, useToastMessageDispatch, usePermission, useRouter } from '@rocket.chat/ui-contexts';
 import type { ReactElement } from 'react';
@@ -76,14 +76,13 @@ const AppDetailsPage = ({ id }: { id: App['id'] }): ReactElement => {
 			<Page.Header title={t('App_Info')} onClickBack={handleReturn}>
 				<ButtonGroup>
 					{installed && isAdminUser && (
-						<Button primary disabled={!hasUnsavedChanges || isSaving} onClick={saveAppSettings}>
-							{!isSaving && t('Save_changes')}
-							{isSaving && <Throbber inheritColor />}
+						<Button primary disabled={!hasUnsavedChanges} loading={isSaving} onClick={saveAppSettings}>
+							{t('Save_changes')}
 						</Button>
 					)}
 				</ButtonGroup>
 			</Page.Header>
-			<Page.ScrollableContentWithShadow pi='x24' pbs='x24' pbe='0' h='full'>
+			<Page.ScrollableContentWithShadow pi={24} pbs={24} pbe={0} h='full'>
 				<Box w='full' alignSelf='center' h='full' display='flex' flexDirection='column'>
 					{!appData && <AppDetailsPageLoading />}
 					{appData && (

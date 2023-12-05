@@ -1,8 +1,8 @@
-import { Meteor } from 'meteor/meteor';
+import { Messages, AppsTokens, Users, Rooms, LivechatVisitors } from '@rocket.chat/models';
 import { Random } from '@rocket.chat/random';
 import crypto from 'crypto';
 import { Match, check } from 'meteor/check';
-import { Messages, AppsTokens, Users, Rooms, LivechatVisitors } from '@rocket.chat/models';
+import { Meteor } from 'meteor/meteor';
 import { API } from '../api';
 import PushNotification from '../../../push-notifications/server/lib/PushNotification';
 import { canAccessRoomAsync } from '../../../authorization/server/functions/canAccessRoom';
@@ -196,9 +196,9 @@ API.v1.addRoute(
 					if (removed) {
 						// logger.debug(`Removed ${removed} existing app items`);
 					}
-				
+
 				}
-				
+
 				return API.v1.success({ result: doc });
 			} catch (error) {
 				return API.v1.failure(error);
@@ -210,18 +210,18 @@ API.v1.addRoute(
 			if (!deviceToken || typeof deviceToken !== 'string') {
 			  throw new Error('device-token-invalid');
 			}
-		  
+
 			// Validate visitorToken
 			if (!visitorToken || typeof visitorToken !== 'string') {
 			  throw new Error('visitor-token-invalid');
 			}
-		  
+
 			// Check if the visitor exists
 			const visitor = await LivechatVisitors.getVisitorByToken(visitorToken, { projection: { _id: 1 } });
 			if (!visitor) {
 			  throw new Error('visitor-token-invalid');
 			}
-		  
+
 			// Delete tokens for the specified device and visitor
 			const deleteQuery = {
 			  $or: [
@@ -231,7 +231,7 @@ API.v1.addRoute(
 			  ],
 			  userId: visitor._id,
 			};
-		  
+
 			// Use try-catch to handle any potential errors during deletion
 			try {
 			  const deleteResult = await AppsTokens.deleteMany(deleteQuery);
@@ -246,6 +246,6 @@ API.v1.addRoute(
 			  throw new Error('delete-tokens-failed');
 			}
 		  }
-		  
+
 	},
 );

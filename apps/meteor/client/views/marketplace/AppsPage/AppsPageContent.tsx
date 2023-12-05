@@ -32,6 +32,7 @@ const AppsPageContent = (): ReactElement => {
 	const context = useRouteParameter('context');
 
 	const isMarketplace = context === 'explore';
+	const isPremium = context === 'premium';
 	const isRequested = context === 'requested';
 
 	const [freePaidFilterStructure, setFreePaidFilterStructure] = useState({
@@ -40,7 +41,7 @@ const AppsPageContent = (): ReactElement => {
 			{ id: 'all', label: t('All_Prices'), checked: true },
 			{ id: 'free', label: t('Free_Apps'), checked: false },
 			{ id: 'paid', label: t('Paid_Apps'), checked: false },
-			{ id: 'enterprise', label: t('Enterprise'), checked: false },
+			{ id: 'premium', label: t('Premium'), checked: false },
 		],
 	});
 	const freePaidFilterOnSelected = useRadioToggle(setFreePaidFilterStructure);
@@ -55,22 +56,41 @@ const AppsPageContent = (): ReactElement => {
 	});
 	const statusFilterOnSelected = useRadioToggle(setStatusFilterStructure);
 
-	const [sortFilterStructure, setSortFilterStructure] = useState<RadioDropDownGroup>({
-		label: t('Sort_By'),
-		items: [
-			{ id: 'urf', label: t('Unread_Requested_First'), checked: false },
-			{ id: 'url', label: t('Unread_Requested_Last'), checked: false },
-			{ id: 'az', label: 'A-Z', checked: false },
-			{ id: 'za', label: 'Z-A', checked: false },
-			{ id: 'mru', label: t('Most_recent_updated'), checked: true },
-			{ id: 'lru', label: t('Least_recent_updated'), checked: false },
-		],
+	const baseFilterStructureItems = [
+		{ id: 'az', label: 'A-Z', checked: false },
+		{ id: 'za', label: 'Z-A', checked: false },
+		{ id: 'mru', label: t('Most_recent_updated'), checked: true },
+		{ id: 'lru', label: t('Least_recent_updated'), checked: false },
+	];
+
+	const requestedFilterItems = [
+		{ id: 'urf', label: t('Unread_Requested_First'), checked: false },
+		{ id: 'url', label: t('Unread_Requested_Last'), checked: false },
+	];
+
+	const createFilterStructureItems = () => {
+		return isRequested ? [...requestedFilterItems, ...baseFilterStructureItems] : baseFilterStructureItems;
+	};
+
+	const [sortFilterStructure, setSortFilterStructure] = useState<RadioDropDownGroup>(() => {
+		return {
+			label: t('Sort_By'),
+			items: createFilterStructureItems(),
+		};
 	});
+
+	useEffect(() => {
+		setSortFilterStructure({
+			label: t('Sort_By'),
+			items: createFilterStructureItems(),
+		});
+	}, [isRequested]);
+
 	const sortFilterOnSelected = useRadioToggle(setSortFilterStructure);
 
 	const getAppsData = useCallback((): appsDataType => {
 		switch (context) {
-			case 'enterprise':
+			case 'premium':
 			case 'explore':
 			case 'requested':
 				return marketplaceApps;
@@ -81,6 +101,24 @@ const AppsPageContent = (): ReactElement => {
 		}
 	}, [context, marketplaceApps, installedApps, privateApps]);
 
+	const findSort = () => {
+		const possibleSort = sortFilterStructure.items.find(({ checked }) => checked);
+
+		return possibleSort ? possibleSort.id : 'mru';
+	};
+
+	const findPurchaseType = () => {
+		const possiblePurchaseType = freePaidFilterStructure.items.find(({ checked }) => checked);
+
+		return possiblePurchaseType ? possiblePurchaseType.id : 'all';
+	};
+
+	const findStatus = () => {
+		const possibleStatus = statusFilterStructure.items.find(({ checked }) => checked);
+
+		return possibleStatus ? possibleStatus.id : 'all';
+	};
+
 	const [categories, selectedCategories, categoryTagList, onSelected] = useCategories();
 	const appsResult = useFilteredApps({
 		appsData: getAppsData(),
@@ -88,15 +126,16 @@ const AppsPageContent = (): ReactElement => {
 		current,
 		itemsPerPage,
 		categories: useMemo(() => selectedCategories.map(({ label }) => label), [selectedCategories]),
-		purchaseType: useMemo(() => freePaidFilterStructure.items.find(({ checked }) => checked)?.id, [freePaidFilterStructure]),
-		sortingMethod: useMemo(() => sortFilterStructure.items.find(({ checked }) => checked)?.id, [sortFilterStructure]),
-		status: useMemo(() => statusFilterStructure.items.find(({ checked }) => checked)?.id, [statusFilterStructure]),
+		purchaseType: useMemo(findPurchaseType, [freePaidFilterStructure]),
+		sortingMethod: useMemo(findSort, [sortFilterStructure]),
+		status: useMemo(findStatus, [statusFilterStructure]),
 		context,
 	});
 
 	const noInstalledApps = appsResult.phase === AsyncStatePhase.RESOLVED && !isMarketplace && appsResult.value.totalAppsLength === 0;
 
-	const noMarketplaceOrInstalledAppMatches = appsResult.phase === AsyncStatePhase.RESOLVED && isMarketplace && appsResult.value.count === 0;
+	const noMarketplaceOrInstalledAppMatches =
+		appsResult.phase === AsyncStatePhase.RESOLVED && (isMarketplace || isPremium) && appsResult.value.count === 0;
 
 	const noInstalledAppMatches =
 		appsResult.phase === AsyncStatePhase.RESOLVED &&
@@ -104,7 +143,7 @@ const AppsPageContent = (): ReactElement => {
 		appsResult.value.totalAppsLength !== 0 &&
 		appsResult.value.count === 0;
 
-	const noAppRequests = context === 'requested' && appsResult?.value?.totalAppsLength !== 0 && appsResult?.value?.count === 0;
+	const noAppRequests = context === 'requested' && appsResult?.value?.count === 0;
 
 	const noErrorsOcurred = !noMarketplaceOrInstalledAppMatches && !noInstalledAppMatches && !noInstalledApps && !noAppRequests;
 
@@ -149,6 +188,30 @@ const AppsPageContent = (): ReactElement => {
 		toggleInitialSortOption(isRequested);
 	}, [isMarketplace, isRequested, sortFilterOnSelected, t, toggleInitialSortOption]);
 
+	const getEmptyState = () => {
+		if (noAppRequests) {
+			return <NoAppRequestsEmptyState />;
+		}
+
+		if (noMarketplaceOrInstalledAppMatches) {
+			return <NoMarketplaceOrInstalledAppMatchesEmptyState shouldShowSearchText={appsResult.value.shouldShowSearchText} text={text} />;
+		}
+
+		if (noInstalledAppMatches) {
+			return (
+				<NoInstalledAppMatchesEmptyState
+					shouldShowSearchText={appsResult.value.shouldShowSearchText}
+					text={text}
+					onButtonClick={handleReturn}
+				/>
+			);
+		}
+
+		if (noInstalledApps) {
+			return context === 'private' ? <PrivateEmptyState /> : <NoInstalledAppsEmptyState onButtonClick={handleReturn} />;
+		}
+	};
+
 	return (
 		<>
 			<AppsFilters
@@ -165,9 +228,7 @@ const AppsPageContent = (): ReactElement => {
 				statusFilterOnSelected={statusFilterOnSelected}
 				context={context || 'explore'}
 			/>
-
 			{appsResult.phase === AsyncStatePhase.LOADING && <AppsPageContentSkeleton />}
-
 			{appsResult.phase === AsyncStatePhase.RESOLVED && noErrorsOcurred && (
 				<AppsPageContentBody
 					isMarketplace={isMarketplace}
@@ -181,21 +242,7 @@ const AppsPageContent = (): ReactElement => {
 					noErrorsOcurred={noErrorsOcurred}
 				/>
 			)}
-
-			{noAppRequests && <NoAppRequestsEmptyState />}
-
-			{noMarketplaceOrInstalledAppMatches && (
-				<NoMarketplaceOrInstalledAppMatchesEmptyState shouldShowSearchText={appsResult.value.shouldShowSearchText} text={text} />
-			)}
-
-			{noInstalledAppMatches && (
-				<NoInstalledAppMatchesEmptyState
-					shouldShowSearchText={appsResult.value.shouldShowSearchText}
-					text={text}
-					onButtonClick={handleReturn}
-				/>
-			)}
-			{noInstalledApps && <>{context === 'private' ? <PrivateEmptyState /> : <NoInstalledAppsEmptyState onButtonClick={handleReturn} />}</>}
+			{getEmptyState()}
 			{appsResult.phase === AsyncStatePhase.REJECTED && <AppsPageConnectionError onButtonClick={reload} />}
 		</>
 	);

@@ -1,8 +1,8 @@
-import { v4 as uuidv4 } from 'uuid';
-import type { BannerPlatform, IBanner, IBannerDismiss, Optional, IUser } from '@rocket.chat/core-typings';
-import { Banners, BannersDismiss, Users } from '@rocket.chat/models';
 import { api, ServiceClassInternal } from '@rocket.chat/core-services';
 import type { IBannerService } from '@rocket.chat/core-services';
+import type { BannerPlatform, IBanner, IBannerDismiss, Optional, IUser } from '@rocket.chat/core-typings';
+import { Banners, BannersDismiss, Users } from '@rocket.chat/models';
+import { v4 as uuidv4 } from 'uuid';
 
 export class BannerService extends ServiceClassInternal implements IBannerService {
 	protected name = 'banner';
@@ -26,13 +26,13 @@ export class BannerService extends ServiceClassInternal implements IBannerServic
 		return true;
 	}
 
-	async create(doc: Optional<IBanner, '_id'>): Promise<IBanner> {
+	async create(doc: Optional<IBanner, '_id' | '_updatedAt'>): Promise<IBanner> {
 		const bannerId = doc._id || uuidv4();
 
-		doc.view.appId = 'banner-core';
+		doc.view.appId = doc.view.appId ?? 'banner-core';
 		doc.view.viewId = bannerId;
 
-		await Banners.create({
+		await Banners.createOrUpdate({
 			...doc,
 			_id: bannerId,
 		});
@@ -64,7 +64,13 @@ export class BannerService extends ServiceClassInternal implements IBannerServic
 
 		const dismissed = new Set(result.map(({ bannerId }) => bannerId));
 
-		return banners.filter((banner) => !dismissed.has(banner._id));
+		return banners
+			.filter((banner) => !dismissed.has(banner._id))
+			.map((banner) => ({
+				...banner,
+				// add surface to legacy banners
+				surface: !banner.surface ? 'banner' : banner.surface,
+			}));
 	}
 
 	async dismiss(userId: string, bannerId: string): Promise<boolean> {

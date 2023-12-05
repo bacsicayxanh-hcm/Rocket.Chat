@@ -1,18 +1,4 @@
-import {
-	Box,
-	Button,
-	ButtonGroup,
-	Callout,
-	Chip,
-	Field,
-	Icon,
-	Margins,
-	Select,
-	InputBox,
-	TextInput,
-	Throbber,
-	UrlInput,
-} from '@rocket.chat/fuselage';
+import { Box, Button, ButtonGroup, Callout, Chip, Field, Margins, Select, InputBox, TextInput, UrlInput } from '@rocket.chat/fuselage';
 import { useUniqueId, useSafely } from '@rocket.chat/fuselage-hooks';
 import { useToastMessageDispatch, useRouter, useRouteParameter, useSetting, useEndpoint, useTranslation } from '@rocket.chat/ui-contexts';
 import React, { useState, useMemo, useEffect } from 'react';
@@ -168,12 +154,12 @@ function NewImportPage() {
 		<Page className='page-settings'>
 			<Page.Header title={t('Import_New_File')}>
 				<ButtonGroup>
-					<Button secondary onClick={handleBackToImportsButtonClick}>
-						<Icon name='back' /> {t('Back_to_imports')}
+					<Button icon='back' secondary onClick={handleBackToImportsButtonClick}>
+						{t('Back_to_imports')}
 					</Button>
 					{importer && (
-						<Button primary minHeight='x40' disabled={isLoading} onClick={handleImportButtonClick}>
-							{isLoading ? <Throbber inheritColor /> : t('Import')}
+						<Button primary minHeight='x40' loading={isLoading} onClick={handleImportButtonClick}>
+							{t('Import')}
 						</Button>
 					)}
 				</ButtonGroup>
