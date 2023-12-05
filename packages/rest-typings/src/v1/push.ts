@@ -1,4 +1,4 @@
-import type { IMessage, IPushNotificationConfig, IPushTokenTypes, IPushToken } from '@rocket.chat/core-typings';
+import type { IMessage, IPushNotificationConfig, IPushTokenTypes, IPushToken,IPushGuestTokenTypes} from '@rocket.chat/core-typings';
 import Ajv from 'ajv';
 
 const ajv = new Ajv({
@@ -39,6 +39,40 @@ type PushGetProps = {
 	id: string;
 };
 
+type RegisterVisitorDeviceTokenProps = {
+	token: string
+	id?: string;
+	type: IPushGuestTokenTypes;
+	value: string;
+	appName: string;
+};
+
+const RegisterVisitorDeviceTokenPropsSchema = {
+	type: 'object',
+	properties: {
+		token: {
+			type: 'string',
+		},
+		id: {
+			type: 'string',
+			nullable: true,
+		},
+		type: {
+			type: 'string',
+		},
+		value: {
+			type: 'string',
+		},
+		appName: {
+			type: 'string',
+		},
+	},
+	required: ['type', 'value', 'appName','token'],
+	additionalProperties: false,
+};
+
+export const isRegisterVisitorDeviceTokenProps = ajv.compile<RegisterVisitorDeviceTokenProps>(RegisterVisitorDeviceTokenPropsSchema);
+
 const PushGetPropsSchema = {
 	type: 'object',
 	properties: {
@@ -56,6 +90,10 @@ export type PushEndpoints = {
 	'/v1/push.token': {
 		POST: (payload: PushTokenProps) => { result: IPushToken };
 		DELETE: (payload: { token: string }) => void;
+	};
+	'/v1/registerVisitorDeviceToken': {
+		POST: (payload: RegisterVisitorDeviceTokenProps) => { result: IPushToken };
+		DELETE: (payload: { deviceToken: string, visitorToken : string}) => void;
 	};
 	'/v1/push.get': {
 		GET: (params: PushGetProps) => {

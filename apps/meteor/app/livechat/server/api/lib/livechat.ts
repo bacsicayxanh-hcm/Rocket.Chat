@@ -53,6 +53,7 @@ async function findDepartments(
 export function findGuest(token: string): Promise<ILivechatVisitor | null> {
 	return LivechatVisitors.getVisitorByToken(token, {
 		projection: {
+			_id: 1,
 			name: 1,
 			username: 1,
 			token: 1,
@@ -126,6 +127,36 @@ export function getRoom({
 	return LivechatTyped.getRoom(guest, message, roomInfo, agent, extraParams);
 }
 
+export function getRoomWithoutCheckOnlineAgent({
+	guest,
+	rid,
+	roomInfo,
+	agent,
+	extraParams,
+}: {
+	guest: ILivechatVisitor;
+	rid: string;
+	roomInfo: {
+		source?: IOmnichannelRoom['source'];
+	};
+	agent: SelectedAgent;
+	extraParams?: Record<string, any>;
+}): Promise<{ room: IOmnichannelRoom; newRoom: boolean }> {
+	const token = guest?.token;
+
+	const message = {
+		_id: Random.id(),
+		rid,
+		msg: '',
+		token,
+		ts: new Date(),
+	};
+
+	return LivechatTyped.getRoomWithoutCheckOnlineAgent(guest, message, roomInfo, agent, extraParams);
+}
+
+
+export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: true } | ILivechatAgent> {
 export async function findAgent(agentId?: string): Promise<void | { hiddenInfo: boolean } | ILivechatAgent> {
 	return normalizeAgent(agentId);
 }

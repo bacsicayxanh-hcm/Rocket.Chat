@@ -155,6 +155,8 @@ export class ListenersModule {
 
 			notifications.notifyLoggedInThisInstance('user-status', [_id, username, statusChanged, statusText, name, roles]);
 
+
+			// notifications.streamLogged.emitWithoutBroadcast("user-status",[_id, username, statusChanged, statusText, name, roles]);
 			if (_id) {
 				notifications.sendPresence(_id, username, statusChanged, statusText);
 			}
@@ -290,8 +292,26 @@ export class ListenersModule {
 		service.onEvent('watch.rooms', ({ clientAction, room }): void => {
 			// this emit will cause the user to receive a 'rooms-changed' event
 			notifications.streamUser.__emit(room._id, clientAction, room);
-
+			
 			notifications.streamRoomData.emitWithoutBroadcast(room._id, room as IOmnichannelRoom);
+			notifications.streamUser.emitWithoutBroadcast(`${(room as IOmnichannelRoom).v._id}/rooms-changed`,clientAction,    room as IOmnichannelRoom,)
+			// switch (clientAction) {
+			// 	case 'updated':
+			// 		notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })
+			// 		break;
+			// 	case 'inserted':
+			// 		notifications.notifyUserInThisInstance(event.id, 'userData', { id: event.id, data: event.data, type: 'inserted' });
+			// 		break;
+			// 	case 'removed':
+			// 		notifications.notifyUserInThisInstance(event.id, 'userData', { id: event.id, type: 'removed' });
+			// 		break;
+			// }	
+			// notifications.notifyUserInThisInstance(room, 'userData', {
+			// 	id: event.id,
+			// 	diff: event.diff,
+			// 	unset: event.unset,
+			// 	type: 'updated',
+			// });
 		});
 
 		service.onEvent('watch.users', (event): void => {

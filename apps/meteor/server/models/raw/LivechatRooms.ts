@@ -1870,9 +1870,9 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 	}
 
 	findOpenByVisitorToken(visitorToken: string, options: FindOptions<IOmnichannelRoom> = {}, extraQuery: Filter<IOmnichannelRoom> = {}) {
-		const query: Filter<IOmnichannelRoom> = {
-			't': 'l',
-			'open': true,
+		const query: Filter<IOmnichannelRoom> ={
+			t: 'l',
+			open: true,
 			'v.token': visitorToken,
 			...extraQuery,
 		};
@@ -2276,25 +2276,21 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		return this.find(query);
 	}
 
-	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string; ts?: Date }) {
+	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string;name?: string; ts?: Date }) {
 		const query: Filter<IOmnichannelRoom> = {
 			_id: roomId,
 			t: 'l',
 		};
-		const update = {
+		const update:UpdateFilter<IOmnichannelRoom> = {
 			$set: {
 				servedBy: {
 					_id: newAgent.agentId,
 					username: newAgent.username,
-					ts: new Date(),
+					name: newAgent.name,
+					ts: newAgent.ts || new Date(), 
 				},
 			},
 		};
-
-		if (newAgent.ts) {
-			update.$set.servedBy.ts = newAgent.ts;
-		}
-
 		return this.updateOne(query, update);
 	}
 
@@ -2380,6 +2376,33 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		const update = {
 			$set: {
 				'v.lastMessageTs': lastMessageTs,
+			},
+		};
+
+		return this.updateOne(query, update);
+	}
+
+	setVisitorLastSeenByRoomId(roomId: string, lastSeen: Date) {
+		const query = {
+			_id: roomId,
+		};
+		const update = {
+			$set: {
+				'v.ls': lastSeen,
+				unread: 0,
+			},
+		};
+
+		return this.updateOne(query, update);
+	}
+
+	setRoomUnreadByRoomId(roomId: string, unread: number) {
+		const query = {
+			_id: roomId,
+		};
+		const update = {
+			$set: {
+				unread: unread,
 			},
 		};
 

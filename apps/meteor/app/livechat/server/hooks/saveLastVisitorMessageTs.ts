@@ -12,11 +12,14 @@ callbacks.add(
 		if (message.t) {
 			return message;
 		}
-		if (!message.token) {
-			return message;
-		}
+		if (message.token) {
+			await LivechatRooms.setVisitorLastMessageTimestampByRoomId(room._id, message.ts);
+			await LivechatRooms.setVisitorLastSeenByRoomId(room._id,new Date());
 
-		await LivechatRooms.setVisitorLastMessageTimestampByRoomId(room._id, message.ts);
+		} else {
+			await LivechatRooms.setRoomUnreadByRoomId(room._id, (room?.unread ?? 0) + 1);
+		}
+		return message;
 	},
 	callbacks.priority.HIGH,
 	'save-last-visitor-message-timestamp',

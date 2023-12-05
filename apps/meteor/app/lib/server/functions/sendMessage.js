@@ -9,6 +9,8 @@ import { isURL } from '../../../../lib/utils/isURL';
 import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
 import { FileUpload } from '../../../file-upload/server';
 import notifications from '../../../notifications/server/lib/Notifications';
+import { sendAllNotifications } from '../../../lib/server/lib/sendNotificationsOnMessage';
+
 import { settings } from '../../../settings/server';
 import { parseUrlsInMessage } from './parseUrlsInMessage';
 
@@ -251,6 +253,7 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 	message = await Message.beforeSave({ message, room, user });
 
 	message = await callbacks.run('beforeSaveMessage', message, room);
+
 	if (message) {
 		if (message.t === 'otr') {
 			const otrStreamer = notifications.streamRoomMessage;
@@ -279,7 +282,7 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		if (Apps && Apps.isLoaded()) {
 			// This returns a promise, but it won't mutate anything about the message
 			// so, we don't really care if it is successful or fails
-			void Apps.getBridges()?.getListenerBridge().messageEvent('IPostMessageSent', message);
+			void  Apps.getBridges()?.getListenerBridge().messageEvent('IPostMessageSent', 	message);
 		}
 
 		/*
@@ -287,6 +290,8 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		*/
 
 		// Execute all callbacks
+		// sendAllNotifications(message, room);
+
 		await callbacks.run('afterSaveMessage', message, room);
 		return message;
 	}

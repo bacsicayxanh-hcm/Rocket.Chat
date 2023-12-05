@@ -1612,6 +1612,10 @@ const GETLivechatConfigParamsSchema = {
 			type: 'string',
 			nullable: true,
 		},
+		sort: {
+			type: 'string',
+			nullable: true,
+		},
 	},
 	additionalProperties: false,
 };
@@ -1880,6 +1884,9 @@ const POSTLivechatMessageParamsSchema = {
 
 export const isPOSTLivechatMessageParams = ajv.compile<POSTLivechatMessageParams>(POSTLivechatMessageParamsSchema);
 
+
+
+
 type GETLivechatMessageIdParams = {
 	token: string;
 	rid: string;
@@ -2101,6 +2108,30 @@ const POSTLivechatRoomCloseParamsSchema = {
 };
 
 export const isPOSTLivechatRoomCloseParams = ajv.compile<POSTLivechatRoomCloseParams>(POSTLivechatRoomCloseParamsSchema);
+
+type POSTLivechatReadRoomMessageParams = {
+	token: string;
+	rid: string;
+	ls: string;
+};
+
+const POSTLivechatReadRoomMessageParamsSchema = {
+	type: 'object',
+	properties: {
+		token: {
+			type: 'string',
+		},
+		rid: {
+			type: 'string',
+		},
+		ls: {
+			type: 'string',
+		},
+	},
+	required: ['token', 'rid', 'ls'],
+	additionalProperties: false,
+}
+export const isPOSTLivechatReadRoomMessageParams = ajv.compile<POSTLivechatReadRoomMessageParams>(POSTLivechatReadRoomMessageParamsSchema);
 
 type POSTLivechatRoomCloseByUserParams = {
 	rid: string;
@@ -2497,6 +2528,25 @@ const GETLivechatAgentsAgentIdDepartmentsParamsSchema = {
 export const isGETLivechatAgentsAgentIdDepartmentsParams = ajv.compile<GETLivechatAgentsAgentIdDepartmentsParams>(
 	GETLivechatAgentsAgentIdDepartmentsParamsSchema,
 );
+
+
+type GETBadgeParams = {
+	token: string;
+};
+
+const GETBadgeParamsSchema = {
+	type: 'object',
+	properties: {
+		token: {
+			type: 'string',
+		},	
+	},
+	required: ['token'],
+	additionalProperties: false,
+};
+
+export const isGETBadgeParams = ajv.compile<GETBadgeParams>(GETBadgeParamsSchema);
+
 
 type GETBusinessHourParams = { _id?: string; type?: string };
 
@@ -3571,8 +3621,17 @@ export type OmnichannelEndpoints = {
 	'/v1/livechat/room': {
 		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
 	};
+	'/v1/livechat/room.openOrCreate': {
+		GET: (params: GETLivechatRoomParams) => { room: IOmnichannelRoom; newRoom: boolean } | IOmnichannelRoom;
+	};
+	'/v1/livechat/getBadge': {
+		GET: (params: GETBadgeParams) => { unread: number; success: boolean };
+	};
 	'/v1/livechat/room.close': {
 		POST: (params: POSTLivechatRoomCloseParams) => { rid: string; comment: string };
+	};
+	'/v1/livechat/readRoomMessage': {
+		POST: (params: POSTLivechatReadRoomMessageParams) => {token: string; rid: string; ls: Date };
 	};
 	'/v1/livechat/room.closeByUser': {
 		POST: (params: POSTLivechatRoomCloseByUserParams) => void;

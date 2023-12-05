@@ -117,6 +117,58 @@ export const QueueManager: queueManager = {
 
 		return newRoom;
 	},
+	async requestRoomWithoutCheckOnlineAgent({ guest, message, roomInfo, agent, extraData }) {
+		logger.debug(`Requesting a room for guest ${guest._id}`);
+		check(
+			message,
+			Match.ObjectIncluding({
+				rid: String,
+			}),
+		);
+		check(
+			guest,
+			Match.ObjectIncluding({
+				_id: String,
+				username: String,
+				status: Match.Maybe(String),
+				department: Match.Maybe(String),
+			}),
+		);
+
+		const { rid } = message;
+		const name = (roomInfo && roomInfo.fname) || guest.name || guest.username;
+
+		const room = await LivechatRooms.findOneById(await createLivechatRoom(rid, name, guest, roomInfo, extraData));
+		logger.debug(`Room for visitor ${guest._id} created with id ${room._id}`);
+
+		const inquiry = await LivechatInquiry.findOneById(
+			await createLivechatInquiry({
+				rid,
+				name,
+				guest,
+				message,
+				extraData: { ...extraData, source: roomInfo.source },
+			}),
+		);
+
+		logger.debug(`Generated inquiry for visitor ${guest._id} with id ${inquiry._id} [Not queued]`);
+
+		await LivechatRooms.updateRoomCount();
+
+
+		await RoutingManager.assignAgent(inquiry,agent);
+
+		// await queueInquiry(inquiry, agent);
+		// logger.debug(`Inquiry ${inquiry._id} queued`);
+
+		const newRoom = await LivechatRooms.findOneById(rid);
+		if (!newRoom) {
+			logger.error(`Room with id ${rid} not found`);
+			throw new Error('room-not-found');
+		}
+
+		return newRoom;
+	},
 
 	async unarchiveRoom(archivedRoom) {
 		if (!archivedRoom) {

@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { Omnichannel } from '@rocket.chat/core-services';
 import type { ILivechatAgent, IOmnichannelRoom, IUser, SelectedAgent, TransferByData } from '@rocket.chat/core-typings';
 import { isOmnichannelRoom, OmnichannelSourceType } from '@rocket.chat/core-typings';

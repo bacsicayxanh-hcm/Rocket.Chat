@@ -7,6 +7,10 @@ import type { IStreamer, IStreamerConstructor, IPublication } from 'meteor/rocke
 import type { Progress } from '../../../app/importer/server/classes/ImporterProgress';
 import { emit, StreamPresence } from '../../../app/notifications/server/lib/Presence';
 import { SystemLogger } from '../../lib/logger/system';
+import type { Progress } from '../../../app/importer/server/classes/ImporterProgress';
+// import {Logger} from "/server/lib/logger/Logger";
+
+// const notificationsLogger = new Logger('Notifications');
 
 export class NotificationsModule {
 	public readonly streamLogged: IStreamer<'notify-logged'>;
@@ -154,6 +158,9 @@ export class NotificationsModule {
 				'edit-privileged-setting',
 				'manage-selected-settings',
 			]);
+		});
+		this.streamLogged.allowRead('user-status', async function () {
+			return true
 		});
 
 		this.streamLogged.allowWrite('none');
@@ -321,6 +328,26 @@ export class NotificationsModule {
 		});
 		this.streamUser.allowRead(async function (eventName) {
 			const [userId, e] = eventName.split('/');
+            // notificationsLogger.info(
+            //     `StreamUser allow read log: eventName:${eventName}, userid:${userId}, e: ${e}`,
+            // );
+
+            if (e === 'rooms-changed') {
+                // notificationsLogger.info("Rooms changed true")
+                return true;
+            }
+			//  if (e === 'message') {
+            //     SystemLogger.info("message true")
+            //     return true;
+            // }
+			//  if (e === 'notification') {
+            //     SystemLogger.info("notification true")
+            //     return true;
+            // }
+			// if (e === 'subscriptions-changed') {
+            //     SystemLogger.info("subscriptions-changed true")
+            //     return true;
+            // }
 
 			if (e === 'otr') {
 				const isEnable = await Settings.getValueById('OTR_Enable');
@@ -329,7 +356,6 @@ export class NotificationsModule {
 			if (e === 'webrtc') {
 				return true;
 			}
-
 			return Boolean(this.userId) && this.userId === userId;
 		});
 
@@ -417,8 +443,7 @@ export class NotificationsModule {
 		});
 
 		this.streamRoles.allowWrite('none');
-		this.streamRoles.allowRead('logged');
-
+		this.streamRoles.allowRead('all');
 		this.streamUser.on('_afterPublish', async (streamer, publication: IPublication, eventName: string): Promise<void> => {
 			const { userId } = publication._session;
 			if (!userId) {
@@ -483,9 +508,9 @@ export class NotificationsModule {
 		this.streamPresence.allowWrite('none');
 	}
 
-	// notifyAll<E extends StreamKeys<'notify-all'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-all', E>): void {
-	// 	return this.streamAll.emit(eventName, ...args);
-	// }
+	notifyAll<E extends StreamKeys<'notify-all'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-all', E>): void {
+		return this.streamAll.emit(eventName, ...args);
+	}
 
 	notifyLogged<E extends StreamKeys<'notify-logged'>>(eventName: E, ...args: StreamerCallbackArgs<'notify-logged', E>): void {
 		return this.streamLogged.emit(eventName, ...args);

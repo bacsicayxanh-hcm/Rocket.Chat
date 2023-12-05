@@ -3,6 +3,7 @@ import { isFileAttachment, isFileImageAttachment } from '@rocket.chat/core-typin
 import { escapeRegExp } from '@rocket.chat/string-helpers';
 
 import { callbacks } from '../../../../../lib/callbacks';
+import { joinRoomMethod } from '../../methods/joinRoom';
 import { i18n } from '../../../../../server/lib/i18n';
 import { settings } from '../../../../settings/server';
 
@@ -13,6 +14,22 @@ import { settings } from '../../../../settings/server';
  */
 export async function parseMessageTextPerUser(messageText: string, message: IMessage, receiver: IUser): Promise<string> {
 	const lng = receiver.language || settings.get('Language') || 'en';
+
+	const firstAttachment = message.attachments?.[0];
+	if (!message.msg && firstAttachment && isFileAttachment(firstAttachment) && isFileImageAttachment(firstAttachment)) {
+		return firstAttachment.image_type ? i18n.t('User_uploaded_image', { lng }) : i18n.t('User_uploaded_file', { lng });
+	}
+
+	if (message.msg && message.t === 'e2e') {
+		return i18n.t('Encrypted_message', { lng });
+	}
+
+	// perform processing required before sending message as notification such as markdown filtering
+	return callbacks.run('renderNotification', messageText);
+}
+
+export async function parseMessageTextPerUserForVisitor(messageText: string, message: IMessage,): Promise<string> {
+	const lng = 'vi-VN';
 
 	const firstAttachment = message.attachments?.[0];
 	if (!message.msg && firstAttachment && isFileAttachment(firstAttachment) && isFileImageAttachment(firstAttachment)) {
@@ -64,4 +81,8 @@ export function messageContainsHighlight(message: IMessage, highlights: string[]
 		const regexp = new RegExp(escapeRegExp(highlight), 'i');
 		return regexp.test(message.msg);
 	});
+}
+
+export async function callJoinRoom(userId: string, rid: string): Promise<void> {
+	await joinRoomMethod(userId, rid);
 }

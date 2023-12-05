@@ -74,7 +74,7 @@ export interface StreamerEvents {
 	];
 
 	'notify-user': [
-		{ key: `${string}/rooms-changed`; args: ['inserted' | 'updated' | 'removed' | 'changed', IRoom] },
+		{ key: `${string}/rooms-changed`; args: ['inserted' | 'updated' | 'removed' | 'changed', IOmnichannelRoom] },
 		{
 			key: `${string}/subscriptions-changed`;
 			args:

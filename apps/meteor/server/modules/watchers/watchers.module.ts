@@ -45,16 +45,16 @@ type BroadcastCallback = <T extends keyof EventSignatures>(event: T, ...args: Pa
 
 const hasKeys =
 	(requiredKeys: string[]): ((data?: Record<string, any>) => boolean) =>
-	(data?: Record<string, any>): boolean => {
-		if (!data) {
-			return false;
-		}
+		(data?: Record<string, any>): boolean => {
+			if (!data) {
+				return false;
+			}
 
-		return Object.keys(data)
-			.filter((key) => key !== '_id')
-			.map((key) => key.split('.')[0])
-			.some((key) => requiredKeys.includes(key));
-	};
+			return Object.keys(data)
+				.filter((key) => key !== '_id')
+				.map((key) => key.split('.')[0])
+				.some((key) => requiredKeys.includes(key));
+		};
 
 const hasRoomFields = hasKeys(Object.keys(roomFields));
 const hasSubscriptionFields = hasKeys(Object.keys(subscriptionFields));
@@ -62,6 +62,11 @@ const hasSubscriptionFields = hasKeys(Object.keys(subscriptionFields));
 let watcherStarted = false;
 export function isWatcherRunning(): boolean {
 	return watcherStarted;
+}
+
+
+function getNameOfId(users: Map<string, string>, id: string): string {
+	return users.get(id) || id;
 }
 
 export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallback): void {
@@ -326,10 +331,38 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 	});
 
 	watcher.on<IRoom>(Rooms.getCollectionName(), async ({ clientAction, id, data, diff }) => {
-		if (clientAction === 'removed') {
-			void broadcast('watch.rooms', { clientAction, room: { _id: id } });
+
+		// Check if there is a change and only `_updatedAt` field is modified
+		if (diff && Object.keys(diff).length === 1 && diff._updatedAt) {
+			// avoid useless changes
 			return;
 		}
+
+		// if (!hasRoomFields(data || diff)) {
+		// 	return;
+		// }
+
+		// var projection =  {
+		// 	_id: 1,
+		// 	v:1,
+		// 	departmentId: 1,
+		// 	servedBy: 1,
+		// 	open: 1,
+		// 	lastMessage: 1,
+		// 	unread: 1,
+		// 	unreadNotLoaded:1,
+		// 	name: 1,
+		// 	fname: 1,
+		// 	t: 1,
+		// 	lm: 1,		
+		// 	// @TODO create an API to register this fields based on room type
+		// }
+		// var room = await LiveChatRooms.findOneById(id, { projection: projection });
+		// if (!room) { 
+		// 	return;
+		// }
+
+
 
 		if (!hasRoomFields(data || diff)) {
 			return;
@@ -338,6 +371,23 @@ export function initWatchers(watcher: DatabaseWatcher, broadcast: BroadcastCallb
 		const room = data ?? (await Rooms.findOneById(id, { projection: roomFields }));
 		if (!room) {
 			return;
+		}
+
+		var list = room.servedBy ? await Users.findUsersByIds([room.servedBy._id], {
+			projection: {
+				_id: 1,
+				name: 1,
+			},
+		}).toArray() : [];
+
+		const names = new Map();
+		list.forEach((user) => {
+			names.set(user._id, user.name);
+		});
+
+		// const names = Users.findUsersByUsernames([room.servedBy.user])
+		if (room.servedBy) {
+			room.servedBy.name = getNameOfId(names, room.servedBy._id);
 		}
 
 		void broadcast('watch.rooms', { clientAction, room });

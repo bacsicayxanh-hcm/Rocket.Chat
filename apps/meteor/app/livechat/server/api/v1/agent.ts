@@ -21,9 +21,9 @@ API.v1.addRoute('livechat/agent.info/:rid/:token', {
 			throw new Error('invalid-room');
 		}
 
-		const agent = room?.servedBy && (await findAgent(room.servedBy._id));
+		const agent = room?.servedBy && (await  Users.findOneAgentById(room.servedBy._id));
 		if (!agent) {
-			throw new Error('invalid-agent');
+			return API.v1.notFound('Agent not found');
 		}
 
 		return API.v1.success({ agent });

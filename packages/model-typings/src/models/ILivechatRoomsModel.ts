@@ -230,7 +230,7 @@ export interface ILivechatRoomsModel extends IBaseModel<IOmnichannelRoom> {
 		data?: { departmentId: string },
 	): AggregationCursor<Pick<IOmnichannelRoom, 'ts' | 'departmentId' | 'open' | 'servedBy' | 'metrics' | 'msgs' | 'onHold'>>;
 	findOpenByAgent(userId: string, extraQuery?: Filter<IOmnichannelRoom>): FindCursor<IOmnichannelRoom>;
-	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string }): Promise<UpdateResult>;
+	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string ; ts?:Date ; name?:string}): Promise<UpdateResult>;
 	changeDepartmentIdByRoomId(roomId: string, departmentId: string): Promise<UpdateResult>;
 	saveCRMDataByRoomId(roomId: string, crmData: unknown): Promise<UpdateResult>;
 	updateVisitorStatus(token: string, status: ILivechatVisitor['status']): Promise<UpdateResult | Document>;
@@ -238,6 +238,8 @@ export interface ILivechatRoomsModel extends IBaseModel<IOmnichannelRoom> {
 	removeByVisitorToken(token: string): Promise<DeleteResult>;
 	removeById(_id: string): Promise<DeleteResult>;
 	setVisitorLastMessageTimestampByRoomId(roomId: string, lastMessageTs: Date): Promise<UpdateResult>;
+	setVisitorLastSeenByRoomId(roomId: string, lastSeen: Date): Promise<UpdateResult>;
+	setRoomUnreadByRoomId(roomId: string, unread: number): Promise<UpdateResult>;
 	setVisitorInactivityInSecondsById(roomId: string, visitorInactivity: any): Promise<UpdateResult>;
 	changeVisitorByRoomId(roomId: string, visitor: { _id: string; username: string; token: string }): Promise<UpdateResult>;
 	unarchiveOneById(roomId: string): Promise<UpdateResult>;

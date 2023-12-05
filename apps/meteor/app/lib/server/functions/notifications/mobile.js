@@ -1,4 +1,4 @@
-import { Subscriptions } from '@rocket.chat/models';
+import { LivechatRooms, Subscriptions } from '@rocket.chat/models';
 
 import { i18n } from '../../../../../server/lib/i18n';
 import { roomCoordinator } from '../../../../../server/lib/rooms/roomCoordinator';
@@ -63,6 +63,61 @@ export async function getPushData({
 		category: enableNotificationReplyButton(room, receiver.username) ? CATEGORY_MESSAGE : CATEGORY_MESSAGE_NOREPLY,
 	};
 }
+
+export async function getPushDataToVisitor({
+	room,
+	message,
+	userId,
+	senderUsername,
+	senderName,
+	notificationMessage,
+	receiver,
+	shouldOmitMessage = true,
+  }) {
+	// Determine the username based on settings
+	let username;
+	if (settings.get('UI_Use_Real_Name') && senderName) {
+	  username = senderName;
+	} else {
+	  username = senderUsername;
+	}
+  
+	// Language code 'lng' is declared but not used, you can remove it
+  
+	// Customize the messageText if needed
+	const messageText = notificationMessage;
+
+	let rooms = await LivechatRooms.findByVisitorId(userId,{
+		projection: {
+			unread: 1,
+		}
+	}).toArray();
+
+	// var fRoom = LivechatRooms.findByVisitorId(userId).toArray();
+	let countUnread  = 0;
+	rooms.forEach((element) => {
+		countUnread += element.unread ?? 0;
+	  });
+  
+	return {
+	  payload: {
+		sender: message.u,
+		senderName: username,
+		type: room.t,
+		name: settings.get('Push_show_username_room') ? room.name : '',
+		messageType: message.t,
+		tmid: message.tmid,
+		...(message.t === 'e2e' && { msg: message.msg }),
+	  },
+	  roomName: username,
+	  username: username,
+	  message: messageText,
+	  badge: countUnread,
+	  category: CATEGORY_MESSAGE,
+	};
+  }
+  
+
 
 export function shouldNotifyMobile({
 	disableAllMessageNotifications,

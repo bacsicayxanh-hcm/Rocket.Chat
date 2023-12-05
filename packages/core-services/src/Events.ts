@@ -137,7 +137,7 @@ export type EventSignatures = {
 					};
 			  },
 	): void;
-	'watch.rooms'(data: { clientAction: ClientAction; room: Pick<IRoom, '_id'> | IRoom }): void;
+	'watch.rooms'(data: { clientAction: ClientAction; room: IRoom }): void;
 	'watch.subscriptions'(
 		data:
 			| {

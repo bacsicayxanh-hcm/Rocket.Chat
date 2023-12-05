@@ -48,8 +48,10 @@ export interface IRoom extends IRocketChatRecord {
 	callStatus?: CallStatus;
 	webRtcCallStartTime?: Date;
 	servedBy?: {
-		_id: string;
-	};
+        _id: string;
+        name?: string;
+        username?:string;
+    };
 
 	streamingOptions?: {
 		id?: string;
@@ -185,6 +187,7 @@ export interface IOmnichannelGenericRoom extends Omit<IRoom, 'default' | 'featur
 		_id: string;
 		ts: Date;
 		username: IUser['username'];
+		name: IUser['name'];
 	};
 	onHold?: boolean;
 	departmentId?: string;
@@ -219,6 +222,8 @@ export interface IOmnichannelGenericRoom extends Omit<IRoom, 'default' | 'featur
 	queuedAt?: Date;
 
 	status?: 'queued' | 'taken' | 'ready'; // TODO: missing types for this
+
+	unread?: number;
 
 	ts: Date;
 	label?: string;
@@ -259,7 +264,6 @@ export interface IOmnichannelRoom extends IOmnichannelGenericRoom {
 	// The ID of the pdf file generated for the transcript
 	// This will help if we want to have this file shown on other places of the UI
 	pdfTranscriptFileId?: string;
-
 	metrics?: {
 		serviceTimeDuration?: number;
 		chatDuration?: number;

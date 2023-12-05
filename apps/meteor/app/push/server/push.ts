@@ -10,6 +10,8 @@ import { initAPN, sendAPN } from './apn';
 import type { PushOptions, PendingPushNotification } from './definition';
 import { sendGCM } from './gcm';
 import { logger } from './logger';
+import { settings } from '../../settings/server';
+import { isExists } from 'date-fns';
 
 export const _matchToken = Match.OneOf({ apn: String }, { gcm: String });
 
@@ -210,32 +212,42 @@ class PushClass {
 		};
 	}
 
-	private async sendNotificationGateway(
-		app: IAppsTokens,
-		notification: PendingPushNotification,
-		countApn: string[],
-		countGcm: string[],
-	): Promise<void> {
-		if (!this.options.gateways) {
-			return;
-		}
+    private async sendNotificationGateway(
+        app: IAppsTokens,
+        notification: PendingPushNotification,
+        countApn: string[],
+        countGcm: string[],
+    ): Promise<void> {
+        if (!this.options.gateways) {
+            return;
+        }
 
-		const gatewayNotification = this.getGatewayNotificationData(notification);
+        logger.debug('GateWay Length: ', this.options.gateways.length);
+        const gatewayNotification = this.getGatewayNotificationData(notification);
 
-		for (const gateway of this.options.gateways) {
-			logger.debug('send to token', app.token);
+        for (const gateway of this.options.gateways) {
+            logger.debug('send to token', app.token);
+            let appNameIsBSCX = app.appName?.includes("bacsicayxanh");
+            let gatewayIsBSCX = gateway.includes("bacsicayxanh");
+            let isRun = (appNameIsBSCX === gatewayIsBSCX && (appNameIsBSCX !== undefined)) ? true : false;
 
-			if ('apn' in app.token && app.token.apn) {
-				countApn.push(app._id);
-				return this.sendGatewayPush(gateway, 'apn', app.token.apn, { topic: app.appName, ...gatewayNotification });
-			}
+            if (isRun) {
+                logger.debug('GateWay ', gateway, ' send to token', app.token);
+                if ('apn' in app.token && app.token.apn) {
+                    countApn.push(app._id);
+                    notification.topic = app.appName;
+                    await this.sendGatewayPush(gateway, 'apn', app.token.apn, {topic: app.appName, ...gatewayNotification});
+                }
 
-			if ('gcm' in app.token && app.token.gcm) {
-				countGcm.push(app._id);
-				return this.sendGatewayPush(gateway, 'gcm', app.token.gcm, gatewayNotification);
-			}
-		}
-	}
+                if ('gcm' in app.token && app.token.gcm) {
+                    countGcm.push(app._id);
+                    await this.sendGatewayPush(gateway, 'gcm', app.token.gcm, gatewayNotification);
+                }
+            }
+
+
+        }
+    }
 
 	private async sendNotification(notification: PendingPushNotification): Promise<{ apn: string[]; gcm: string[] }> {
 		logger.debug('Sending notification', notification);

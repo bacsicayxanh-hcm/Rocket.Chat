@@ -24,7 +24,7 @@ import { setEmail } from './setEmail';
 import { setStatusText } from './setStatusText';
 import { setUserAvatar } from './setUserAvatar';
 
-const MAX_BIO_LENGTH = 260;
+const MAX_BIO_LENGTH = 100000;
 const MAX_NICKNAME_LENGTH = 120;
 
 let html = '';
