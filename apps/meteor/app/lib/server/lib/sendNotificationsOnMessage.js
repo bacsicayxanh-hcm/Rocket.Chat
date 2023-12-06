@@ -8,7 +8,7 @@ import { roomCoordinator } from '../../../../server/lib/rooms/roomCoordinator';
 import { hasPermissionAsync } from '../../../authorization/server/functions/hasPermission';
 import { Notification } from '../../../notification-queue/server/NotificationQueue';
 import { settings } from '../../../settings/server';
-import { messageContainsHighlight, parseMessageTextPerUser, replaceMentionedUsernamesWithFullNames } from '../functions/notifications';
+import { messageContainsHighlight, parseMessageTextPerUser, parseMessageTextPerUserForVisitor, replaceMentionedUsernamesWithFullNames } from '../functions/notifications';
 import { notifyDesktopUser, shouldNotifyDesktop } from '../functions/notifications/desktop';
 import { getEmailData, shouldNotifyEmail } from '../functions/notifications/email';
 import { getPushData, shouldNotifyMobile, getPushDataToVisitor } from '../functions/notifications/mobile';
