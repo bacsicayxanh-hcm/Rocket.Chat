@@ -1,5 +1,5 @@
 import type { AtLeast, ValueOf } from '@rocket.chat/core-typings';
-import { LivechatVisitors, LivechatRooms } from '@rocket.chat/models';
+import { LivechatVisitors, LivechatRooms ,Users} from '@rocket.chat/models';
 
 import { RoomSettingsEnum, RoomMemberActions } from '../../../../definition/IRoomTypeConfig';
 import type { IRoomTypeServerDirectives } from '../../../../definition/IRoomTypeConfig';
@@ -38,8 +38,8 @@ roomCoordinator.add(LivechatRoomType, {
 		return { title, text };
 	},
 
-	async getMsgSender(senderId) {
-		return LivechatVisitors.findOneEnabledById(senderId);
+	async getMsgSender(senderId) {		
+		return LivechatVisitors.findOneById(senderId);
 	},
 
 	getReadReceiptsExtraData(message) {

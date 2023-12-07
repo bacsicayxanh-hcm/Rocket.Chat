@@ -191,55 +191,55 @@ export const sendNotificationVisitor = async ({
 	}
 
 	// don't notify the sender
-	if (uid === sender._id) {
+	if (sender && uid === sender._id) {
 		return;
 	}
 	try {
 		let receiver = await LivechatVisitors.findOneById(uid, {
-		  projection: {
-			_id: 1,
-			active: 1,
-			emails: 1,
-			language: 1,
-			status: 1,
-			statusConnection: 1,
-			username: 1,
-			name: 1,
-		  },
+			projection: {
+				_id: 1,
+				active: 1,
+				emails: 1,
+				language: 1,
+				status: 1,
+				statusConnection: 1,
+				username: 1,
+				name: 1,
+			},
 		});
 
-		 notificationMessage = await parseMessageTextPerUserForVisitor(notificationMessage, message);
+		notificationMessage = await parseMessageTextPerUserForVisitor(notificationMessage, message);
 
 		const queueItems = [];
 
 		queueItems.push({
-		  type: 'push',
-		  data: await getPushDataToVisitor({
-			room,
-			message,
-			userId: uid,
-			senderUsername: sender.username,
-			senderName: sender.name,
-			notificationMessage,
-			receiver,
-		  }),
+			type: 'push',
+			data: await getPushDataToVisitor({
+				room,
+				message,
+				userId: uid,
+				senderUsername: sender.username,
+				senderName: sender.name,
+				notificationMessage,
+				receiver,
+			}),
 		});
 
 		if (queueItems.length) {
-			logger.debug('call scheduleItemVisitor: ', uid, '\nroomId:',room._id);
+			logger.debug('call scheduleItemVisitor: ', uid, '\nroomId:', room._id);
 
-		  Notification.scheduleItemVisitor({
-			uid: uid,
-			rid: room._id,
-			mid: message._id,
-			items: queueItems,
-			user: receiver,
-		  });
+			Notification.scheduleItemVisitor({
+				uid: uid,
+				rid: room._id,
+				mid: message._id,
+				items: queueItems,
+				user: receiver,
+			});
 		}
-	  } catch (error) {
+	} catch (error) {
 		// Handle any errors here
 		console.error(error);
-	  }
+	}
 };
 
 const project = {
@@ -314,9 +314,9 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				v: 1,
 			}
 		});
-		if (livechatRoom) {
+		if (livechatRoom && livechatRoom.v) {
 			const fSender = await Users.findOneAgentById(message.u._id, { projection: { _id: 1, username: 1, name: 1 } });
-		
+
 			void sendNotificationVisitor({
 				uid: livechatRoom.v._id,
 				sender: fSender,
@@ -324,13 +324,22 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 				notificationMessage,
 				room,
 			});
+			return {
+				fSender,
+				hasMentionToAll,
+				hasMentionToHere,
+				notificationMessage,
+				mentionIds,
+				mentionIdsWithoutGroups,
+			};
 		}
-		return message;
 	}
 
-	const sender = await roomCoordinator.getRoomDirectives(room.t).getMsgSender(message.u._id);
 
-	
+	let sender = await roomCoordinator.getRoomDirectives(room.t).getMsgSender(message.u._id);
+	logger.debug("Message send by Guest: ", sender);
+
+
 
 	const query = {
 		rid: room._id,

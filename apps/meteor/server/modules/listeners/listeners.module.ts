@@ -294,7 +294,10 @@ export class ListenersModule {
 			notifications.streamUser.__emit(room._id, clientAction, room);
 			
 			notifications.streamRoomData.emitWithoutBroadcast(room._id, room as IOmnichannelRoom);
-			notifications.streamUser.emitWithoutBroadcast(`${(room as IOmnichannelRoom).v._id}/rooms-changed`,clientAction,    room as IOmnichannelRoom,)
+			if ((room as IOmnichannelRoom).v)
+			{
+				notifications.streamUser.emitWithoutBroadcast(`${(room as IOmnichannelRoom).v._id}/rooms-changed`,clientAction,    room as IOmnichannelRoom,)
+			}
 			// switch (clientAction) {
 			// 	case 'updated':
 			// 		notifications.streamUser.emitWithoutBroadcast(`${room.v._id}/rooms-changed`, { clientAction, room })
