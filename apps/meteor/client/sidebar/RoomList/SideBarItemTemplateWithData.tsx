@@ -2,9 +2,10 @@ import type { IMessage, IRoom, ISubscription } from '@rocket.chat/core-typings';
 import { isDirectMessageRoom, isMultipleDirectMessageRoom, isOmnichannelRoom, isVideoConfMessage } from '@rocket.chat/core-typings';
 import { Badge, Sidebar, SidebarItemAction, SidebarItemActions, Margins } from '@rocket.chat/fuselage';
 import type { useTranslation } from '@rocket.chat/ui-contexts';
-import { useLayout } from '@rocket.chat/ui-contexts';
+import { useEndpoint, useLayout } from '@rocket.chat/ui-contexts';
+import { useQuery } from '@tanstack/react-query';
 import type { AllHTMLAttributes, ComponentType, ReactElement, ReactNode } from 'react';
-import React, { memo, useMemo } from 'react';
+import React, { useEffect, memo, useMemo, useState } from 'react';
 
 import { useOmnichannelPriorities } from '../../../ee/client/omnichannel/hooks/useOmnichannelPriorities';
 import { RoomIcon } from '../../components/RoomIcon';
@@ -112,7 +113,22 @@ function SideBarItemTemplateWithData({
 	const { sidebar } = useLayout();
 
 	const href = roomCoordinator.getRouteLink(room.t, room) || '';
-	let title = roomCoordinator.getRoomName(room.t, room) || '';
+	const [title, setTitle] = useState('');
+	const getContact = useEndpoint('GET', '/v1/omnichannel/contact');
+	const contactId = room?.v?._id ?? '';
+	const {
+		data: { contact } = {},
+		isInitialLoading,
+		isError,
+	} = useQuery(['/v1/omnichannel/contact', contactId], () => getContact({ contactId }), {
+		enabled: !!contactId,
+	});
+	useEffect(() => {
+		setTitle(roomCoordinator.getRoomName(room.t, room) || '');
+		if (!isInitialLoading && !isError && isOmnichannelRoom(room) && contact?.phone?.[0].phoneNumber) {
+			setTitle((title) => `${title} \n (${contact?.phone?.[0].phoneNumber})`);
+		}
+	}, [room, contact, isInitialLoading, isError]);
 
 	const {
 		lastMessage,
@@ -173,9 +189,6 @@ function SideBarItemTemplateWithData({
 			{isOmnichannelRoom(room) && <OmnichannelBadges room={room} />}
 		</Margins>
 	);
-	if (isOmnichannelRoom(room)) {
-		title += ` (${room?.livechatData?.phoneNumber})` ;
-	}
 
 	return (
 		<SideBarItemTemplate
