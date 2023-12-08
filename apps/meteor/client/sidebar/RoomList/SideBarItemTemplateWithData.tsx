@@ -112,7 +112,7 @@ function SideBarItemTemplateWithData({
 	const { sidebar } = useLayout();
 
 	const href = roomCoordinator.getRouteLink(room.t, room) || '';
-	const title = roomCoordinator.getRoomName(room.t, room) || '';
+	let title = roomCoordinator.getRoomName(room.t, room) || '';
 
 	const {
 		lastMessage,
@@ -173,6 +173,9 @@ function SideBarItemTemplateWithData({
 			{isOmnichannelRoom(room) && <OmnichannelBadges room={room} />}
 		</Margins>
 	);
+	if (isOmnichannelRoom(room)) {
+		title += ` (${room?.livechatData?.phoneNumber})` ;
+	}
 
 	return (
 		<SideBarItemTemplate

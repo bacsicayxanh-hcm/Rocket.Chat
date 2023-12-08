@@ -1,5 +1,6 @@
 import type { IRoom, ISubscription } from '@rocket.chat/core-typings';
 import { isOmnichannelRoom } from '@rocket.chat/core-typings';
+import { Box, Tag } from '@rocket.chat/fuselage';
 import React from 'react';
 
 import { RoomActivityIcon } from '../../../ee/client/omnichannel/components/RoomActivityIcon';
@@ -17,6 +18,15 @@ export const OmnichannelBadges = ({ room }: { room: ISubscription & IRoom }) => 
 		<>
 			{isPriorityEnabled ? <PriorityIcon level={room.priorityWeight} /> : null}
 			<RoomActivityIcon room={room} />
+			{room.tags?.map((tag) => {
+				return (
+					<Box key={tag} mie={1} display='inline'>
+						<Tag medium={true} variant='primary' style={{ display: 'inline' }}>
+							{tag}
+						</Tag>
+					</Box>
+				);
+			})}
 		</>
 	);
 };
