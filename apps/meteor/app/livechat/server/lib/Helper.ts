@@ -74,13 +74,13 @@ export const createLivechatRoom = async (
     );
 
     const extraRoomInfo = await callbacks.run('livechat.beforeRoom', roomInfo, extraData);
-    const { _id, username, token, department: departmentId, status = 'online' } = guest;
+    const { _id, username, token, department: departmentId, status = 'online',phone,visitorEmails } = guest;
     const newRoomAt = new Date();
 
     const { activity } = guest;
     logger.debug({
-        msg: `Creating livechat room for visitor ${_id}`,
-        visitor: { _id, username, departmentId, status, activity },
+        msg: `Creating livechat room for visitor ${guest}`,
+        visitor: { _id, username, departmentId, status, activity ,visitorEmails},
     });
 
     const room: InsertionModel<IOmnichannelRoom> = Object.assign(
@@ -98,6 +98,8 @@ export const createLivechatRoom = async (
                 username,
                 token,
                 status,
+                phone,
+                visitorEmails,
                 ...(activity?.length && { activity }),
             },
             cl: false,
@@ -116,6 +118,8 @@ export const createLivechatRoom = async (
         },
         extraRoomInfo,
     );
+
+    logger.debug(`V RoomInfo`,room.v);
 
     const roomId = (await Rooms.insertOne(room)).insertedId;
 
