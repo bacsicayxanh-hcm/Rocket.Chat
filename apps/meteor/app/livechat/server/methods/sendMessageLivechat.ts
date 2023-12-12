@@ -48,6 +48,7 @@ export const sendMessageLivechat = async ({
 			username: 1,
 			department: 1,
 			token: 1,
+			phone:1,
 		},
 	});
 

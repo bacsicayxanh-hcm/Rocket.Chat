@@ -96,7 +96,7 @@ const ContactInfo = ({ id: contactId, rid: roomId = '', route }: ContactInfoProp
 		return <Box mbs={16}>{t('Contact_not_found')}</Box>;
 	}
 
-	const { username, visitorEmails, phone, ts, livechatData, lastChat, contactManager, status } = contact;
+	const { name ,username, visitorEmails, phone, ts, livechatData, lastChat, contactManager, status } = contact;
 
 	const showContactHistory = currentRouteName === 'live' && lastChat;
 
@@ -127,7 +127,7 @@ const ContactInfo = ({ id: contactId, rid: roomId = '', route }: ContactInfoProp
 							<Label>{`${t('Name')} / ${t('Username')}`}</Label>
 							<Info style={{ display: 'flex' }}>
 								<UserAvatar size='x40' title={username} username={username} />
-								<AgentInfoDetails mis={10} name={username} shortName={username} status={<UserStatus status={status} />} />
+								<AgentInfoDetails mis={10} name={name ?? ''} shortName={username} status={<UserStatus status={status} />} />
 							</Info>
 						</Field>
 					)}

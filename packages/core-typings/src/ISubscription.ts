@@ -1,13 +1,18 @@
 import type { IRocketChatRecord } from './IRocketChatRecord';
 import type { IRole } from './IRole';
+import type { ILivechatVisitor } from './ILivechatVisitor';
 import type { IUser } from './IUser';
+
 import type { RoomType } from './RoomType';
 
 type RoomID = string;
 
 export interface ISubscription extends IRocketChatRecord {
 	u: Pick<IUser, '_id' | 'username' | 'name'>;
-	v?: Pick<IUser, '_id' | 'username' | 'name' | 'status'> & { token?: string };
+	v: Pick<ILivechatVisitor, '_id' | 'username' | 'status' | 'name' | 'phone' |'token' | 'activity'> & {
+        lastMessageTs?: Date;
+		//phone?:string;
+    };
 	rid: RoomID;
 	open: boolean;
 	ts: Date;

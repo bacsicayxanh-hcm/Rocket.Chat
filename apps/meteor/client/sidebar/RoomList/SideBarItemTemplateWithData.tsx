@@ -113,22 +113,28 @@ function SideBarItemTemplateWithData({
 	const { sidebar } = useLayout();
 
 	const href = roomCoordinator.getRouteLink(room.t, room) || '';
-	const [title, setTitle] = useState('');
-	const getContact = useEndpoint('GET', '/v1/omnichannel/contact');
-	const contactId = room?.v?._id ?? '';
-	const {
-		data: { contact } = {},
-		isInitialLoading,
-		isError,
-	} = useQuery(['/v1/omnichannel/contact', contactId], () => getContact({ contactId }), {
-		enabled: !!contactId,
-	});
-	useEffect(() => {
-		setTitle(roomCoordinator.getRoomName(room.t, room) || '');
-		if (!isInitialLoading && !isError && isOmnichannelRoom(room) && contact?.phone?.[0].phoneNumber) {
-			setTitle((title) => `${title} \n (${contact?.phone?.[0].phoneNumber})`);
-		}
-	}, [room, contact, isInitialLoading, isError]);
+	var phoneNumber = '';
+	if (room.v && room.v.phone &&  room.v.phone[0] &&  room.v.phone[0].phoneNumber) {
+		phoneNumber = `(${room.v.phone[0].phoneNumber})`;
+	}
+	let title = `${roomCoordinator.getRoomName(room.t, room) || ''} ${phoneNumber}` ;
+
+	// const [title, setTitle] = useState('');
+	// const getContact = useEndpoint('GET', '/v1/omnichannel/contact');
+	// const contactId = room?.v?._id ?? '';
+	// const {
+	// 	data: { contact } = {},
+	// 	isInitialLoading,
+	// 	isError,
+	// } = useQuery(['/v1/omnichannel/contact', contactId], () => getContact({ contactId }), {
+	// 	enabled: !!contactId,
+	// });
+	// useEffect(() => {
+	// 	setTitle(roomCoordinator.getRoomName(room.t, room) || '');
+	// 	if (!isInitialLoading && !isError && isOmnichannelRoom(room) && contact?.phone?.[0].phoneNumber) {
+	// 		setTitle((title) => `${title} \n (${contact?.phone?.[0].phoneNumber})`);
+	// 	}
+	// }, [room, contact, isInitialLoading, isError]);
 
 	const {
 		lastMessage,
@@ -202,7 +208,7 @@ function SideBarItemTemplateWithData({
 				!selected && sidebar.toggle();
 			}}
 			aria-label={title}
-			title={title}
+			title={<span style={{ whiteSpace: 'pre-line'}}>{title}</span>}
 			time={lastMessage?.ts}
 			subtitle={subtitle}
 			icon={icon}

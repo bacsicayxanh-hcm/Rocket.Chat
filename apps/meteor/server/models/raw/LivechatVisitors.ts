@@ -37,6 +37,14 @@ export class LivechatVisitorsRaw extends BaseRaw<ILivechatVisitor> implements IL
 		];
 	}
 
+	findVisitorsByIds(ids: string[], options?: FindOptions<ILivechatVisitor>): FindCursor<ILivechatVisitor> {
+		const query = {
+		  _id: {
+			$in: ids,
+		  },
+		};
+		return this.find(query, options);
+	  }
 	findOneVisitorByPhone(phone: string): Promise<ILivechatVisitor | null> {
 		const query = {
 			'phone.phoneNumber': phone,

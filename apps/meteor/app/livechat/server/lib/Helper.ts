@@ -26,6 +26,7 @@ import {
     Subscriptions,
     Rooms,
     Users,
+    LivechatVisitors,
 } from '@rocket.chat/models';
 import { Match, check } from 'meteor/check';
 import { Meteor } from 'meteor/meteor';
@@ -74,14 +75,13 @@ export const createLivechatRoom = async (
     );
 
     const extraRoomInfo = await callbacks.run('livechat.beforeRoom', roomInfo, extraData);
-    const { _id, username, token, department: departmentId, status = 'online',phone,visitorEmails } = guest;
+    const { _id, username, token, department: departmentId, status = 'online', phone, visitorEmails } = guest;
     const newRoomAt = new Date();
 
     const { activity } = guest;
-    logger.debug({
-        msg: `Creating livechat room for visitor ${guest}`,
-        visitor: { _id, username, departmentId, status, activity ,visitorEmails},
-    });
+    if (guest.phone && guest.phone[0] && guest.phone[0].phoneNumber) {
+        logger.debug(`GuestPHONE`, guest.phone[0].phoneNumber);
+    }
 
     const room: InsertionModel<IOmnichannelRoom> = Object.assign(
         {
@@ -119,7 +119,7 @@ export const createLivechatRoom = async (
         extraRoomInfo,
     );
 
-    logger.debug(`V RoomInfo`,room.v);
+    logger.debug(`V RoomInfo`, room.v);
 
     const roomId = (await Rooms.insertOne(room)).insertedId;
 
@@ -132,16 +132,16 @@ export const createLivechatRoom = async (
 };
 
 export const createLivechatInquiry = async ({
-                                                rid,
-                                                name,
-                                                guest,
-                                                message,
-                                                initialStatus,
-                                                extraData,
-                                            }: {
+    rid,
+    name,
+    guest,
+    message,
+    initialStatus,
+    extraData,
+}: {
     rid: string;
     name?: string;
-    guest?: Pick<ILivechatVisitor, '_id' | 'username' | 'status' | 'department' | 'name' | 'token' | 'activity'>;
+    guest?: Pick<ILivechatVisitor, '_id' | 'username' | 'status' | 'department' | 'name' | 'token' | 'phone' | 'activity'>;
     message?: Pick<IMessage, 'msg'>;
     initialStatus?: LivechatInquiryStatus;
     extraData?: Pick<ILivechatInquiryRecord, 'source'>;
@@ -167,13 +167,13 @@ export const createLivechatInquiry = async ({
 
     const extraInquiryInfo = await callbacks.run('livechat.beforeInquiry', extraData);
 
-    const { _id, username, token, department, status = UserStatus.ONLINE, activity } = guest;
+    const { _id, username, token, department, status = UserStatus.ONLINE, activity, phone } = guest;
     const { msg } = message;
     const ts = new Date();
 
     logger.debug({
-        msg: `Creating livechat inquiry for visitor ${_id}`,
-        visitor: { _id, username, department, status, activity },
+        msg: `Creating livechat inquiry for visitor ${_id} --  ${phone}`,
+        visitor: { _id, username, department, phone, status, activity },
     });
 
     const inquiry: InsertionModel<ILivechatInquiryRecord> = {
@@ -234,6 +234,21 @@ export const createLivechatSubscription = async (
     }
 
     const { _id, username, token, status = UserStatus.ONLINE } = guest;
+    let phone;
+    logger.debug('INSERT NEW SUBSCRIPTION:',_id ,"Phone:",phone);
+    if (guest.phone && guest.phone[0] && guest.phone[0].phoneNumber){
+        logger.debug(`Visitor Phone: ${guest.phone[0].phoneNumber}`);
+        phone =guest.phone; 
+    } else {
+        var fVisitor = await LivechatVisitors.findOneById(guest._id,{projection :{
+            _id:1,
+            phone:1,
+        }});
+        if (fVisitor) {
+            phone = fVisitor.phone;
+        }
+        logger.debug(`Find Phone: ${phone}`);
+    }
 
     const subscriptionData: InsertionModel<ISubscription> = {
         rid,
@@ -258,6 +273,7 @@ export const createLivechatSubscription = async (
             _id,
             username,
             token,
+            phone,
             status,
         },
         ts: new Date(),
@@ -475,10 +491,10 @@ export const forwardRoomToAgent = async (room: IOmnichannelRoom, transferData: T
 };
 
 export const updateChatDepartment = async ({
-                                               rid,
-                                               newDepartmentId,
-                                               oldDepartmentId,
-                                           }: {
+    rid,
+    newDepartmentId,
+    oldDepartmentId,
+}: {
     rid: string;
     newDepartmentId: string;
     oldDepartmentId?: string;
