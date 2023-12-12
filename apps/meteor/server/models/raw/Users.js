@@ -219,6 +219,7 @@ export class UsersRaw extends BaseRaw {
 					emails: { $first: '$emails' },
 					livechat: { $first: '$livechat' },
 					departments: { $push: '$departments.departmentId' },
+					customFields:{$first: '$customFields'},
 				},
 			},
 			{
