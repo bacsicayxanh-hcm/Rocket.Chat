@@ -17,12 +17,14 @@ API.v1.addRoute('livechat/getBadge', {
             throw new Error('invalid-token');
         }
 
-        const rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorId(guest._id, { projection: { unread: 1 } }, {}).toArray();
+        const rooms: IOmnichannelRoom[] = await LivechatRooms.findByVisitorId(guest._id, { projection: { unread: 1 ,open:1} }, {}).toArray();
 
         // var fRoom = LivechatRooms.findByVisitorId(userId).toArray();
         let countUnread = 0;
         rooms.forEach((element) => {
-            countUnread += element.unread ?? 0;
+            if (element.open) {
+                countUnread += element.unread ?? 0;
+            }
         });
 
         return API.v1.success({ unread: countUnread, success: true });
