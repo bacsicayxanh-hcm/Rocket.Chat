@@ -89,6 +89,7 @@ export async function getPushDataToVisitor({
 
 	let rooms = await LivechatRooms.findByVisitorId(userId,{
 		projection: {
+			open: 1,
 			unread: 1,
 		}
 	}).toArray();
@@ -96,9 +97,12 @@ export async function getPushDataToVisitor({
 	// var fRoom = LivechatRooms.findByVisitorId(userId).toArray();
 	let countUnread  = 0;
 	rooms.forEach((element) => {
-		countUnread += element.unread ?? 0;
+		if (element.open === true)
+		 {
+			countUnread += element.unread ?? 0;
+		 }
 	  });
-  
+   logger.debug("Unread: ",countUnread);
 	return {
 	  payload: {
 		sender: message.u,

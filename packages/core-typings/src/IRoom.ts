@@ -39,7 +39,7 @@ export interface IRoom extends IRocketChatRecord {
 	// TODO: this boolean might be an accident
 	sysMes?: MessageTypesValues[] | boolean;
 
-	u: Pick<IUser, '_id' | 'username' | 'name'>;
+	u: Pick<IUser, '_id' | 'username' | 'name' | 'phone'>;
 	uids?: Array<string>;
 
 	lastMessage?: IMessage;

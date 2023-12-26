@@ -1190,16 +1190,16 @@ export class SubscriptionsRaw extends BaseRaw<ISubscription> implements ISubscri
 		return this.updateMany(query, update);
 	}
 
-	updateDisplayNameByRoomId(roomId: string, fname: string): Promise<UpdateResult | Document> {
+	updateDisplayNameByRoomId(roomId: string, fname: string, vPhone?: string): Promise<UpdateResult | Document> {
 		const query = { rid: roomId };
-
 		const update: UpdateFilter<ISubscription> = {
 			$set: {
 				fname,
 				name: fname,
+				...(typeof vPhone === 'string' && { "v.phone": [{ phoneNumber: vPhone }] }),
 			},
 		};
-
+	
 		return this.updateMany(query, update);
 	}
 

@@ -653,12 +653,13 @@ export class RoomsRaw extends BaseRaw<IRoom> implements IRoomsModel {
 		return this.updateOne({ _id: roomId }, { $set: { name } });
 	}
 
-	setFnameById(_id: IRoom['_id'], fname: IRoom['fname']): Promise<UpdateResult> {
+	setFnameById(_id: IRoom['_id'], fname: IRoom['fname'],vPhone?:string): Promise<UpdateResult> {
 		const query: Filter<IRoom> = { _id };
 
 		const update: UpdateFilter<IRoom> = {
 			$set: {
-				fname,
+				fname : fname,
+				...(typeof vPhone === 'string' && {"v.phone" : [{phoneNumber: vPhone}]})
 			},
 		};
 

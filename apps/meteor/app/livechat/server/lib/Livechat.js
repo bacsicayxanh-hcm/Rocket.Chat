@@ -72,12 +72,15 @@ export const Livechat = {
 		if (guestData?.name?.trim().length) {
 			const { _id: rid } = roomData;
 			const { name } = guestData;
+			const phone = guestData?.phone?.[0]?.phoneNumber ?? "";
+
 			return (
-				(await Rooms.setFnameById(rid, name)) &&
+				(await Rooms.setFnameById(rid, name, phone)) &&
 				(await LivechatInquiry.setNameByRoomId(rid, name)) &&
 				// This one needs to be the last since the agent may not have the subscription
 				// when the conversation is in the queue, then the result will be 0(zero)
-				Subscriptions.updateDisplayNameByRoomId(rid, name)
+				(await Subscriptions.updateDisplayNameByRoomId(rid, name,phone))
+
 			);
 		}
 	},
