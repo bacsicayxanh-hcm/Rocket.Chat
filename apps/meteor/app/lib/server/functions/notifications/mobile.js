@@ -102,7 +102,6 @@ export async function getPushDataToVisitor({
 			countUnread += element.unread ?? 0;
 		 }
 	  });
-   logger.debug("Unread: ",countUnread);
 	return {
 	  payload: {
 		sender: message.u,
