@@ -11,8 +11,8 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  DOCKER_REGISTRY: registry.vngcloud.vn
-  DOCKER_IMAGE_NAME: project_1685601601137
+  DOCKER_REGISTRY: vcr.vngcloud.vn
+  DOCKER_IMAGE_NAME: 95972-florist
   HELM_CHART: rocketchat
   HELM_RELEASE_NAME: florist-chat
   HELM_RELEASE_NAMESPACE: florist-chat
