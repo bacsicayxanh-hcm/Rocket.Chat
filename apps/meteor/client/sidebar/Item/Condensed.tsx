@@ -1,7 +1,7 @@
 import { IconButton, Sidebar } from '@rocket.chat/fuselage';
 import { useMutableCallback, usePrefersReducedMotion } from '@rocket.chat/fuselage-hooks';
 import type { Keys as IconName } from '@rocket.chat/icons';
-import type { FC, ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import React, { memo, useState } from 'react';
 
 type CondensedProps = {
@@ -19,7 +19,7 @@ type CondensedProps = {
 	clickable?: boolean;
 };
 
-const Condensed: FC<CondensedProps> = ({ icon, title = '', avatar, actions, href, unread, menu, badges, ...props }) => {
+const Condensed = ({ icon, title = '', avatar, actions, href, unread, menu, badges, ...props }: CondensedProps) => {
 	const [menuVisibility, setMenuVisibility] = useState(!!window.DISABLE_ANIMATION);
 
 	const isReduceMotionEnabled = usePrefersReducedMotion();
@@ -44,7 +44,7 @@ const Condensed: FC<CondensedProps> = ({ icon, title = '', avatar, actions, href
 				{badges && <Sidebar.Item.Badge>{badges}</Sidebar.Item.Badge>}
 				{menu && (
 					<Sidebar.Item.Menu {...handleMenuEvent}>
-						{menuVisibility ? menu() : <IconButton mini rcx-sidebar-item__menu icon='kebab' />}
+						{menuVisibility ? menu() : <IconButton tabIndex={-1} aria-hidden mini rcx-sidebar-item__menu icon='kebab' />}
 					</Sidebar.Item.Menu>
 				)}
 			</Sidebar.Item.Content>

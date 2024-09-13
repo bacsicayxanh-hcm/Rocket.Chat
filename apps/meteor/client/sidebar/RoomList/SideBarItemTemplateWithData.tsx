@@ -7,9 +7,10 @@ import { useQuery } from '@tanstack/react-query';
 import type { AllHTMLAttributes, ComponentType, ReactElement, ReactNode } from 'react';
 import React, { useEffect, memo, useMemo, useState } from 'react';
 
-import { useOmnichannelPriorities } from '../../../ee/client/omnichannel/hooks/useOmnichannelPriorities';
 import { RoomIcon } from '../../components/RoomIcon';
 import { roomCoordinator } from '../../lib/rooms/roomCoordinator';
+import { isIOsDevice } from '../../lib/utils/isIOsDevice';
+import { useOmnichannelPriorities } from '../../omnichannel/hooks/useOmnichannelPriorities';
 import RoomMenu from '../RoomMenu';
 import { OmnichannelBadges } from '../badges/OmnichannelBadges';
 import type { useAvatarTemplate } from '../hooks/useAvatarTemplate';
@@ -217,6 +218,7 @@ function SideBarItemTemplateWithData({
 			avatar={AvatarTemplate && <AvatarTemplate {...room} />}
 			actions={actions}
 			menu={
+				!isIOsDevice &&
 				!isAnonymous &&
 				(!isQueued || (isQueued && isPriorityEnabled)) &&
 				((): ReactElement => (

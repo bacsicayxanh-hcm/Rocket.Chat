@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor';
 
 import { callbacks } from '../../../../lib/callbacks';
 import { methodDeprecationLogger } from '../../../lib/server/lib/deprecationWarningLogger';
-import { Livechat } from '../lib/Livechat';
 import { Livechat as LivechatTyped } from '../lib/LivechatTyped';
 
 declare module '@rocket.chat/ui-contexts' {
@@ -24,21 +23,24 @@ declare module '@rocket.chat/ui-contexts' {
 			department?: string;
 			customFields?: Array<{ key: string; value: string; overwrite: boolean; scope?: unknown }>;
 		}): {
-			userId: string;
-			visitor: ILivechatVisitor | null;
+			userId: ILivechatVisitor['_id'];
+			visitor: Pick<ILivechatVisitor, '_id' | 'token' | 'name' | 'username' | 'visitorEmails' | 'department'>;
 		};
 	}
 }
 
 Meteor.methods<ServerMethods>({
-	async 'livechat:registerGuest'({ token, name, email, department, customFields } = {}) {
+	async 'livechat:registerGuest'({ token, name, email, department, customFields } = {}): Promise<{
+		userId: ILivechatVisitor['_id'];
+		visitor: Pick<ILivechatVisitor, '_id' | 'token' | 'name' | 'username' | 'visitorEmails' | 'department'>;
+	}> {
 		methodDeprecationLogger.method('livechat:registerGuest', '7.0.0');
 
 		if (!token) {
 			throw new Meteor.Error('error-invalid-token', 'Invalid token', { method: 'livechat:registerGuest' });
 		}
 
-		const userId = await LivechatTyped.registerGuest.call(this, {
+		const visitor = await LivechatTyped.registerGuest.call(this, {
 			token,
 			name,
 			email,
@@ -48,23 +50,23 @@ Meteor.methods<ServerMethods>({
 		// update visited page history to not expire
 		await Messages.keepHistoryForToken(token);
 
-		const visitor = await LivechatVisitors.getVisitorByToken(token, {
-			projection: {
-                // Custom: Start
-				_id: 1,
-                // Custom: End
-				token: 1,
-				name: 1,
-				username: 1,
-				visitorEmails: 1,
-				department: 1,
-			},
-		});
+		if (!visitor) {
+			throw new Meteor.Error('error-invalid-visitor', 'Invalid visitor', { method: 'livechat:registerGuest' });
+		}
 
 		const extraQuery = await callbacks.run('livechat.applyRoomRestrictions', {});
 		// If it's updating an existing visitor, it must also update the roomInfo
 		const rooms: IRoom[] = await LivechatRooms.findOpenByVisitorToken(token, {}, extraQuery).toArray();
-		await Promise.all(rooms.map((room) => Livechat.saveRoomInfo(room, visitor)));
+		await Promise.all(
+			rooms.map((room) =>
+				LivechatTyped.saveRoomInfo(room, {
+					_id: visitor._id,
+					name: visitor.name,
+					phone: visitor.phone?.[0]?.phoneNumber,
+					livechatData: visitor.livechatData as { [k: string]: string },
+				}),
+			),
+		);
 
 		if (customFields && customFields instanceof Array) {
 			for await (const customField of customFields) {
@@ -80,8 +82,15 @@ Meteor.methods<ServerMethods>({
 		}
 
 		return {
-			userId,
-			visitor,
+			userId: visitor._id,
+			visitor: {
+				_id: visitor._id,
+				token: visitor.token,
+				name: visitor.name,
+				username: visitor.username,
+				visitorEmails: visitor.visitorEmails,
+				department: visitor.department,
+			},
 		};
 	},
 });

@@ -1,11 +1,11 @@
 import { Box } from '@rocket.chat/fuselage';
 import { useLayout, useSetting, useCurrentModal, useRoute, useCurrentRoutePath } from '@rocket.chat/ui-contexts';
-import { PaletteStyleTag } from '@rocket.chat/ui-theming/src/PaletteStyleTag';
-import { SidebarPaletteStyleTag } from '@rocket.chat/ui-theming/src/SidebarPaletteStyleTag';
 import type { ReactElement, ReactNode } from 'react';
 import React, { useEffect, useRef } from 'react';
 
 import Sidebar from '../../../sidebar';
+import AccessibilityShortcut from './AccessibilityShortcut';
+import { MainLayoutStyleTags } from './MainLayoutStyleTags';
 
 const LayoutWithSidebar = ({ children }: { children: ReactNode }): ReactElement => {
 	const { isEmbedded: embeddedLayout } = useLayout();
@@ -46,10 +46,13 @@ const LayoutWithSidebar = ({ children }: { children: ReactNode }): ReactElement 
 			className={[embeddedLayout ? 'embedded-view' : undefined, 'menu-nav'].filter(Boolean).join(' ')}
 			aria-hidden={Boolean(modal)}
 		>
-			<PaletteStyleTag />
-			<SidebarPaletteStyleTag />
+			<AccessibilityShortcut />
+			<MainLayoutStyleTags />
 			{!removeSidenav && <Sidebar />}
-			<main className={['rc-old', 'main-content', readReceiptsEnabled ? 'read-receipts-enabled' : undefined].filter(Boolean).join(' ')}>
+			<main
+				id='main-content'
+				className={['rc-old', 'main-content', readReceiptsEnabled ? 'read-receipts-enabled' : undefined].filter(Boolean).join(' ')}
+			>
 				{children}
 			</main>
 		</Box>

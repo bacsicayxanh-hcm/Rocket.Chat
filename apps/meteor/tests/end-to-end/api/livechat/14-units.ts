@@ -9,9 +9,7 @@ import { updatePermission, updateSetting } from '../../../data/permissions.helpe
 import { createUser, deleteUser } from '../../../data/users.helper';
 import { IS_EE } from '../../../e2e/config/constants';
 
-(IS_EE ? describe : describe.skip)('[EE] LIVECHAT - Units', function () {
-	this.retries(0);
-
+(IS_EE ? describe : describe.skip)('[EE] LIVECHAT - Units', () => {
 	before((done) => getCredentials(done));
 
 	before(async () => {
@@ -144,6 +142,28 @@ import { IS_EE } from '../../../e2e/config/constants';
 			expect(body).to.have.property('type', 'u');
 			expect(body).to.have.property('numMonitors', 1);
 			expect(body).to.have.property('numDepartments', 1);
+
+			// cleanup
+			await deleteUser(user);
+		});
+
+		it('should return a unit with no monitors if a user who is not a monitor is passed', async () => {
+			await updatePermission('manage-livechat-units', ['admin']);
+			const user = await createUser();
+			const department = await createDepartment();
+
+			const { body } = await request
+				.post(api('livechat/units'))
+				.set(credentials)
+				.send({
+					unitData: { name: 'test', visibility: 'public', enabled: true, description: 'test' },
+					unitMonitors: [{ monitorId: user._id, username: user.username }],
+					unitDepartments: [{ departmentId: department._id }],
+				})
+				.expect(200);
+
+			expect(body).to.have.property('numMonitors', 0);
+			expect(body).to.have.property('name', 'test');
 
 			// cleanup
 			await deleteUser(user);

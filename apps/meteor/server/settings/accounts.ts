@@ -57,6 +57,19 @@ export const createAccountSettings = () =>
 				],
 			});
 
+			await this.add('Accounts_TwoFactorAuthentication_Max_Invalid_Email_Code_Attempts', 5, {
+				type: 'int',
+				enableQuery: [
+					enable2FA,
+					{
+						_id: 'Accounts_TwoFactorAuthentication_By_Email_Enabled',
+						value: true,
+					},
+				],
+				i18nLabel: 'Accounts_TwoFactorAuthentication_Max_Invalid_Email_Code_Attempts',
+				i18nDescription: 'Accounts_TwoFactorAuthentication_Max_Invalid_Email_Code_Attempts_Description',
+			});
+
 			await this.add('Accounts_TwoFactorAuthentication_RememberFor', 1800, {
 				type: 'int',
 				enableQuery: enable2FA,
@@ -72,7 +85,7 @@ export const createAccountSettings = () =>
 		const enableQueryCollectData = { _id: 'Block_Multiple_Failed_Logins_Enabled', value: true };
 
 		await this.section('Login_Attempts', async function () {
-			await this.add('Block_Multiple_Failed_Logins_Enabled', false, {
+			await this.add('Block_Multiple_Failed_Logins_Enabled', true, {
 				type: 'boolean',
 			});
 
@@ -695,6 +708,28 @@ export const createAccountSettings = () =>
 				type: 'boolean',
 				public: true,
 				i18nLabel: 'VideoConf_Mobile_Ringing',
+			});
+
+			const defaultUserPreferencesSidebarSectionsOrder = [
+				'Incoming_Calls',
+				'Incoming_Livechats',
+				'Open_Livechats',
+				'On_Hold_Chats',
+				'Unread',
+				'Favorites',
+				'Teams',
+				'Discussions',
+				'Channels',
+				'Direct_Messages',
+				'Conversations',
+			];
+
+			await this.add('Accounts_Default_User_Preferences_sidebarSectionsOrder', defaultUserPreferencesSidebarSectionsOrder, {
+				type: 'multiSelect',
+				public: true,
+				values: defaultUserPreferencesSidebarSectionsOrder.map((key) => ({ key, i18nLabel: key })),
+				i18nLabel: 'Sidebar_Sections_Order',
+				i18nDescription: 'Sidebar_Sections_Order_Description',
 			});
 		});
 

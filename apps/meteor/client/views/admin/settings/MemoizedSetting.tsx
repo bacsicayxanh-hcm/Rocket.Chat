@@ -20,6 +20,7 @@ import RoomPickSettingInput from './inputs/RoomPickSettingInput';
 import SelectSettingInput from './inputs/SelectSettingInput';
 import SelectTimezoneSettingInput from './inputs/SelectTimezoneSettingInput';
 import StringSettingInput from './inputs/StringSettingInput';
+import TimespanSettingInput from './inputs/TimespanSettingInput';
 
 // @todo: the props are loosely typed because `Setting` needs to typecheck them.
 const inputsByType: Record<ISettingBase['type'], ElementType<any>> = {
@@ -39,6 +40,7 @@ const inputsByType: Record<ISettingBase['type'], ElementType<any>> = {
 	roomPick: RoomPickSettingInput,
 	timezone: SelectTimezoneSettingInput,
 	lookup: LookupSettingInput,
+	timespan: TimespanSettingInput,
 	date: GenericSettingInput, // @todo: implement
 	group: GenericSettingInput, // @todo: implement
 };
@@ -46,6 +48,7 @@ const inputsByType: Record<ISettingBase['type'], ElementType<any>> = {
 type MemoizedSettingProps = {
 	_id?: string;
 	type: ISettingBase['type'];
+	packageValue: ISettingBase['packageValue'];
 	hint?: ReactNode;
 	callout?: ReactNode;
 	value?: SettingValue;
@@ -55,10 +58,11 @@ type MemoizedSettingProps = {
 	onResetButtonClick?: () => void;
 	className?: string;
 	invisible?: boolean;
-	label?: string;
+	label?: ReactNode;
 	sectionChanged?: boolean;
 	hasResetButton?: boolean;
 	disabled?: boolean;
+	required?: boolean;
 	showUpgradeButton?: ReactNode;
 	actionText?: string;
 };
@@ -92,8 +96,8 @@ const MemoizedSetting = ({
 					editor={editor}
 					onChangeValue={onChangeValue}
 					onChangeEditor={onChangeEditor}
-					{...inputProps}
 					disabled={disabled}
+					{...inputProps}
 				/>
 				{hint && type !== 'code' && <FieldHint>{hint}</FieldHint>}
 				{callout && (
@@ -101,8 +105,8 @@ const MemoizedSetting = ({
 						<Callout type='warning'>{callout}</Callout>
 					</Margins>
 				)}
+				{showUpgradeButton}
 			</Box>
-			{showUpgradeButton}
 		</Field>
 	);
 };

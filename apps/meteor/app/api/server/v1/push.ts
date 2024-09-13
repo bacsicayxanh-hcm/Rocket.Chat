@@ -1,8 +1,11 @@
-import { Messages, AppsTokens, Users, Rooms, LivechatVisitors } from '@rocket.chat/models';
+import { Messages, AppsTokens, Users, Rooms, LivechatVisitors, Settings } from '@rocket.chat/models';
 import { Random } from '@rocket.chat/random';
 import crypto from 'crypto';
 import { Match, check } from 'meteor/check';
 import { Meteor } from 'meteor/meteor';
+
+import { executePushTest } from '../../../../server/lib/pushConfig';
+import { settings } from '../../../settings/server';
 import { API } from '../api';
 import PushNotification from '../../../push-notifications/server/lib/PushNotification';
 import { canAccessRoomAsync } from '../../../authorization/server/functions/canAccessRoom';
@@ -12,6 +15,14 @@ export const _hashLoginToken = (loginToken: string): string => {
 	hash.update(loginToken);
 	return hash.digest('base64');
 };
+
+// Custom: Start
+export const _hashLoginToken = (loginToken: string): string => {
+    const hash = crypto.createHash('sha256');
+    hash.update(loginToken);
+    return hash.digest('base64');
+};
+// Custom: End
 
 API.v1.addRoute(
 	'push.token',
@@ -117,6 +128,7 @@ API.v1.addRoute(
 	},
 );
 
+// Custom: Start
 API.v1.addRoute(
 	'registerVisitorDeviceToken',
 	{},
@@ -247,5 +259,44 @@ API.v1.addRoute(
 			}
 		  }
 
+	},
+);
+// Custom: End
+API.v1.addRoute(
+	'push.info',
+	{ authRequired: true },
+	{
+		async get() {
+			const defaultGateway = (await Settings.findOneById('Push_gateway', { projection: { packageValue: 1 } }))?.packageValue;
+			const defaultPushGateway = settings.get('Push_gateway') === defaultGateway;
+			return API.v1.success({
+				pushGatewayEnabled: settings.get('Push_enable'),
+				defaultPushGateway,
+			});
+		},
+	},
+);
+
+API.v1.addRoute(
+	'push.test',
+	{
+		authRequired: true,
+		rateLimiterOptions: {
+			numRequestsAllowed: 1,
+			intervalTimeInMS: 1000,
+		},
+		permissionsRequired: ['test-push-notifications'],
+	},
+	{
+		async post() {
+			if (settings.get('Push_enable') !== true) {
+				throw new Meteor.Error('error-push-disabled', 'Push is disabled', {
+					method: 'push_test',
+				});
+			}
+
+			const tokensCount = await executePushTest(this.userId, this.user.username);
+			return API.v1.success({ tokensCount });
+		},
 	},
 );

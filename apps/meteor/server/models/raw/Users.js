@@ -56,7 +56,6 @@ export class UsersRaw extends BaseRaw {
 			{ key: { lastLogin: 1 } },
 			{ key: { status: 1 } },
 			{ key: { statusText: 1 } },
-			{ key: { active: 1 }, sparse: 1 },
 			{ key: { statusConnection: 1 }, sparse: 1 },
 			{ key: { appId: 1 }, sparse: 1 },
 			{ key: { type: 1 } },
@@ -431,6 +430,17 @@ export class UsersRaw extends BaseRaw {
 
 	findLDAPUsers(options) {
 		const query = { ldap: true };
+
+		return this.find(query, options);
+	}
+
+	findLDAPUsersExceptIds(userIds, options = {}) {
+		const query = {
+			ldap: true,
+			_id: {
+				$nin: userIds,
+			},
+		};
 
 		return this.find(query, options);
 	}
@@ -960,9 +970,9 @@ export class UsersRaw extends BaseRaw {
 		return this.updateMany(query, update);
 	}
 
-	makeAgentsWithinBusinessHourAvailable(agentIds) {
+	findOnlineButNotAvailableAgents(userIds) {
 		const query = {
-			...(agentIds && { _id: { $in: agentIds } }),
+			...(userIds && { _id: { $in: userIds } }),
 			roles: 'livechat-agent',
 			// Exclude away users
 			status: 'online',
@@ -970,13 +980,7 @@ export class UsersRaw extends BaseRaw {
 			statusLivechat: 'not-available',
 		};
 
-		const update = {
-			$set: {
-				statusLivechat: 'available',
-			},
-		};
-
-		return this.updateMany(query, update);
+		return this.find(query);
 	}
 
 	removeBusinessHourByAgentIds(agentIds = [], businessHourId) {
@@ -1036,24 +1040,21 @@ export class UsersRaw extends BaseRaw {
 		return this.updateMany(query, update);
 	}
 
-	updateLivechatStatusBasedOnBusinessHours(userIds = []) {
-		const query = {
-			$or: [{ openBusinessHours: { $exists: false } }, { openBusinessHours: { $size: 0 } }],
-			roles: 'livechat-agent',
-			// exclude deactivated users
-			active: true,
-			// Avoid unnecessary updates
-			statusLivechat: 'available',
-			...(Array.isArray(userIds) && userIds.length > 0 && { _id: { $in: userIds } }),
-		};
-
-		const update = {
-			$set: {
-				statusLivechat: 'not-available',
+	findAgentsAvailableWithoutBusinessHours(userIds = []) {
+		return this.find(
+			{
+				$or: [{ openBusinessHours: { $exists: false } }, { openBusinessHours: { $size: 0 } }],
+				$and: [{ roles: 'livechat-agent' }, { roles: { $ne: 'bot' } }],
+				// exclude deactivated users
+				active: true,
+				// Avoid unnecessary updates
+				statusLivechat: 'available',
+				...(Array.isArray(userIds) && userIds.length > 0 && { _id: { $in: userIds } }),
 			},
-		};
-
-		return this.updateMany(query, update);
+			{
+				projection: { openBusinessHours: 1 },
+			},
+		);
 	}
 
 	setLivechatStatusActiveBasedOnBusinessHours(userId) {
@@ -1078,10 +1079,18 @@ export class UsersRaw extends BaseRaw {
 	async isAgentWithinBusinessHours(agentId) {
 		const query = {
 			_id: agentId,
-			openBusinessHours: {
-				$exists: true,
-				$not: { $size: 0 },
-			},
+			$or: [
+				{
+					openBusinessHours: {
+						$exists: true,
+						$not: { $size: 0 },
+					},
+				},
+				{
+					// Bots can ignore Business Hours and be always available
+					roles: 'bot',
+				},
+			],
 		};
 		return (await this.col.countDocuments(query)) > 0;
 	}
@@ -1654,7 +1663,7 @@ export class UsersRaw extends BaseRaw {
 			},
 		};
 
-		const user = await this.col.findOneAndUpdate(query, update, { sort, returnDocument: 'after' });
+		const user = await this.findOneAndUpdate(query, update, { sort, returnDocument: 'after' });
 		if (user && user.value) {
 			return {
 				agentId: user.value._id,
@@ -1684,7 +1693,7 @@ export class UsersRaw extends BaseRaw {
 			},
 		};
 
-		const user = await this.col.findOneAndUpdate(query, update, { sort, returnDocument: 'after' });
+		const user = await this.findOneAndUpdate(query, update, { sort, returnDocument: 'after' });
 		if (user?.value) {
 			return {
 				agentId: user.value._id,
@@ -1947,45 +1956,63 @@ export class UsersRaw extends BaseRaw {
 		);
 	}
 
-	removeExpiredEmailCodesOfUserId(userId) {
+	removeExpiredEmailCodeOfUserId(userId) {
+		return this.updateOne(
+			{ '_id': userId, 'services.emailCode.expire': { $lt: new Date() } },
+			{
+				$unset: { 'services.emailCode': 1 },
+			},
+		);
+	}
+
+	removeEmailCodeOfUserId(userId) {
 		return this.updateOne(
 			{ _id: userId },
 			{
-				$pull: {
-					'services.emailCode': {
-						expire: { $lt: new Date() },
-					},
+				$unset: { 'services.emailCode': 1 },
+			},
+		);
+	}
+
+	incrementInvalidEmailCodeAttempt(userId) {
+		return this.findOneAndUpdate(
+			{ _id: userId },
+			{
+				$inc: { 'services.emailCode.attempts': 1 },
+			},
+			{
+				returnDocument: 'after',
+				projection: {
+					'services.emailCode.attempts': 1,
 				},
 			},
 		);
 	}
 
-	removeEmailCodeByUserIdAndCode(userId, code) {
-		return this.updateOne(
-			{ _id: userId },
+	async maxInvalidEmailCodeAttemptsReached(userId, maxAttempts) {
+		const result = await this.findOne(
 			{
-				$pull: {
-					'services.emailCode': {
-						code,
-					},
+				'_id': userId,
+				'services.emailCode.attempts': { $gte: maxAttempts },
+			},
+			{
+				projection: {
+					_id: 1,
 				},
 			},
 		);
+		return !!result?._id;
 	}
 
 	addEmailCodeByUserId(userId, code, expire) {
 		return this.updateOne(
 			{ _id: userId },
 			{
-				$push: {
+				$set: {
 					'services.emailCode': {
-						$each: [
-							{
-								code,
-								expire,
-							},
-						],
-						$slice: -5,
+						code,
+						expire,
+						attempts: 0,
 					},
 				},
 			},
@@ -3047,5 +3074,18 @@ export class UsersRaw extends BaseRaw {
 
 	countByRole(role) {
 		return this.col.countDocuments({ roles: role });
+	}
+
+	updateLivechatStatusByAgentIds(userIds, status) {
+		return this.updateMany(
+			{
+				_id: { $in: userIds },
+			},
+			{
+				$set: {
+					statusLivechat: status,
+				},
+			},
+		);
 	}
 }

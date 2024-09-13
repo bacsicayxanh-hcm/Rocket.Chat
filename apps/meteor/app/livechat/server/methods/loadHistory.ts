@@ -1,6 +1,7 @@
 import type { IMessage } from '@rocket.chat/core-typings';
 import { LivechatVisitors, LivechatRooms } from '@rocket.chat/models';
 import type { ServerMethods } from '@rocket.chat/ui-contexts';
+import { check, Match } from 'meteor/check';
 import { Meteor } from 'meteor/meteor';
 
 import { loadMessageHistory } from '../../../lib/server/functions/loadMessageHistory';
@@ -9,12 +10,12 @@ import { methodDeprecationLogger } from '../../../lib/server/lib/deprecationWarn
 declare module '@rocket.chat/ui-contexts' {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	interface ServerMethods {
-		'livechat:loadHistory'(params: { token: string; rid: string; end?: string; limit?: number; ls: string}):
+		'livechat:loadHistory'(params: { token: string; rid: string; end?: Date; limit?: number; ls: Date }):
 			| {
-				messages: IMessage[];
-				firstUnread: any;
-				unreadNotLoaded: number;
-			}
+					messages: IMessage[];
+					firstUnread: any;
+					unreadNotLoaded: number;
+			  }
 			| undefined;
 	}
 }
@@ -23,11 +24,11 @@ Meteor.methods<ServerMethods>({
 	async 'livechat:loadHistory'({ token, rid, end, limit = 20, ls }) {
 		methodDeprecationLogger.method('livechat:loadHistory', '7.0.0');
 
-		if (!token) {
-			throw new Meteor.Error('invalid-token', 'Invalid Token', {
-				method: 'livechat:loadHistory',
-			  });
-		}
+		check(token, String);
+		check(rid, String);
+		check(end, Date);
+		check(ls, Match.OneOf(String, Date));
+		check(limit, Number);
 
 		const visitor = await LivechatVisitors.getVisitorByToken(token, { projection: { _id: 1 } });
 
@@ -42,6 +43,7 @@ Meteor.methods<ServerMethods>({
 			throw new Meteor.Error('invalid-room', 'Invalid Room', { method: 'livechat:loadHistory' });
 		}
 
+        // Custom: Start
 		if (ls) {
 			ls = new Date(ls);
 		}
@@ -50,8 +52,7 @@ Meteor.methods<ServerMethods>({
 		if (end) {
 			end = new Date(end);
 		}
-
-
+        // Custom: End
 
 		return loadMessageHistory({ userId: visitor._id, rid, end, limit, ls });
 	},

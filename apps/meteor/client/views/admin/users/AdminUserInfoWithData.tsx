@@ -1,4 +1,3 @@
-import { isUserFederated } from '@rocket.chat/core-typings';
 import type { IUser } from '@rocket.chat/core-typings';
 import { Callout } from '@rocket.chat/fuselage';
 import { useMutableCallback } from '@rocket.chat/fuselage-hooks';
@@ -10,8 +9,8 @@ import React, { useMemo } from 'react';
 import { getUserEmailAddress } from '../../../../lib/getUserEmailAddress';
 import { ContextualbarContent } from '../../../components/Contextualbar';
 import { FormSkeleton } from '../../../components/Skeleton';
-import UserCard from '../../../components/UserCard';
-import UserInfo from '../../../components/UserInfo';
+import { UserCardRole } from '../../../components/UserCard';
+import { UserInfo } from '../../../components/UserInfo';
 import { UserStatus } from '../../../components/UserStatus';
 import { getUserEmailVerified } from '../../../lib/utils/getUserEmailVerified';
 import AdminUserInfoActions from './AdminUserInfoActions';
@@ -69,6 +68,7 @@ const AdminUserInfoWithData = ({ uid, onReload }: AdminUserInfoWithDataProps): R
 			lastLogin,
 			nickname,
 			canViewAllInfo,
+			reason,
 		} = data.user;
 
 		return {
@@ -76,7 +76,7 @@ const AdminUserInfoWithData = ({ uid, onReload }: AdminUserInfoWithDataProps): R
 			name,
 			username,
 			lastLogin,
-			roles: getRoles(roles).map((role, index) => <UserCard.Role key={index}>{role}</UserCard.Role>),
+			roles: getRoles(roles).map((role, index) => <UserCardRole key={index}>{role}</UserCardRole>),
 			bio,
 			canViewAllInfo,
 			phone,
@@ -91,6 +91,7 @@ const AdminUserInfoWithData = ({ uid, onReload }: AdminUserInfoWithDataProps): R
 			status: <UserStatus status={status} />,
 			statusText,
 			nickname,
+			reason,
 		};
 	}, [approveManuallyUsers, data, getRoles]);
 
@@ -119,7 +120,7 @@ const AdminUserInfoWithData = ({ uid, onReload }: AdminUserInfoWithDataProps): R
 					isAdmin={data?.user.roles?.includes('admin')}
 					userId={data?.user._id}
 					username={user.username}
-					isFederatedUser={isUserFederated(data?.user as unknown as IUser)}
+					isFederatedUser={!!data.user.federated}
 					onChange={onChange}
 					onReload={onReload}
 				/>

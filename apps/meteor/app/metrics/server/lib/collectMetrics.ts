@@ -39,7 +39,7 @@ const setPrometheusData = async (): Promise<void> => {
 	metrics.ddpConnectedUsers.set(_.unique(authenticatedSessions.map((s) => s.userId)).length);
 
 	// Apps metrics
-	const { totalInstalled, totalActive, totalFailed } = getAppsStatistics();
+	const { totalInstalled, totalActive, totalFailed } = await getAppsStatistics();
 
 	metrics.totalAppsInstalled.set(totalInstalled || 0);
 	metrics.totalAppsEnabled.set(totalActive || 0);
@@ -175,17 +175,10 @@ const updatePrometheusConfig = async (): Promise<void> => {
 	clearInterval(resetTimer);
 	if (is.resetInterval) {
 		resetTimer = setInterval(() => {
-			client.register
-				.getMetricsAsArray()
-				.then((metrics) => {
-					metrics.forEach((metric) => {
-						// @ts-expect-error Property 'hashMap' does not exist on type 'metric'.
-						metric.hashMap = {};
-					});
-				})
-				.catch((err) => {
-					SystemLogger.error({ msg: 'Error while collecting metrics', err });
-				});
+			client.register.getMetricsAsArray().forEach((metric) => {
+				// @ts-expect-error Property 'hashMap' does not exist on type 'metric'.
+				metric.hashMap = {};
+			});
 		}, is.resetInterval);
 	}
 

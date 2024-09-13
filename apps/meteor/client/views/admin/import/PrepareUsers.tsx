@@ -1,15 +1,9 @@
 import { CheckBox, Table, Tag, Pagination, TableHead, TableRow, TableCell, TableBody } from '@rocket.chat/fuselage';
 import { useTranslation } from '@rocket.chat/ui-contexts';
-import type { FC, Dispatch, SetStateAction, ChangeEvent } from 'react';
+import type { Dispatch, SetStateAction, ChangeEvent } from 'react';
 import React, { useState, useCallback } from 'react';
 
-type UserDescriptor = {
-	user_id: string;
-	username: string;
-	email: string;
-	is_deleted: boolean;
-	do_import: boolean;
-};
+import type { UserDescriptor } from './UserDescriptor';
 
 type PrepareUsersProps = {
 	usersCount: number;
@@ -17,7 +11,8 @@ type PrepareUsersProps = {
 	setUsers: Dispatch<SetStateAction<UserDescriptor[]>>;
 };
 
-const PrepareUsers: FC<PrepareUsersProps> = ({ usersCount, users, setUsers }) => {
+// TODO: review inner logic
+const PrepareUsers = ({ usersCount, users, setUsers }: PrepareUsersProps) => {
 	const t = useTranslation();
 	const [current, setCurrent] = useState(0);
 	const [itemsPerPage, setItemsPerPage] = useState<25 | 50 | 100>(25);

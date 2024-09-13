@@ -24,7 +24,7 @@ declare module 'meteor/accounts-base' {
 
 		function _runLoginHandlers<T>(methodInvocation: T, loginRequest: Record<string, any>): LoginMethodResult | undefined;
 
-		function registerLoginHandler(name: string, handler: (options: any) => undefined | Object): void;
+		function registerLoginHandler(name: string, handler: (options: any) => undefined | object): void;
 
 		function _storedLoginToken(): unknown;
 
@@ -42,6 +42,8 @@ declare module 'meteor/accounts-base' {
 
 		function _clearAllLoginTokens(userId: string | null): void;
 
+		function config(options: { clientStorage: 'session' | 'local' }): void;
+
 		class ConfigError extends Error {}
 
 		class LoginCancelledError extends Error {
@@ -53,5 +55,15 @@ declare module 'meteor/accounts-base' {
 		const LOGIN_TOKEN_KEY: string;
 
 		const _accountData: Record<string, any>;
+
+		// eslint-disable-next-line @typescript-eslint/no-namespace
+		namespace oauth {
+			function credentialRequestCompleteHandler(
+				callback?: (error?: globalThis.Error | Meteor.Error | Meteor.TypedError) => void,
+				totpCode?: string,
+			): (credentialTokenOrError?: string | globalThis.Error | Meteor.Error | Meteor.TypedError) => void;
+
+			function registerService(name: string): void;
+		}
 	}
 }

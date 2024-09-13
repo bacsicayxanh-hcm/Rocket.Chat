@@ -8,6 +8,7 @@ import {
 	FieldRow,
 	FieldError,
 	FieldHint,
+	PasswordInput,
 	TextAreaInput,
 	ToggleSwitch,
 	FieldGroup,
@@ -101,15 +102,15 @@ const EditOauthApp = ({ onChange, data, ...props }: EditOauthAppProps): ReactEle
 		<ContextualbarScrollableContent w='full' {...props}>
 			<FieldGroup maxWidth='x600' alignSelf='center' w='full'>
 				<Field>
-					<FieldLabel display='flex' justifyContent='space-between' w='full'>
-						{t('Active')}
+					<FieldRow>
+						<FieldLabel>{t('Active')}</FieldLabel>
 						<Controller
 							name='active'
 							control={control}
 							defaultValue={data.active}
 							render={({ field }): ReactElement => <ToggleSwitch onChange={field.onChange} checked={field.value} />}
 						/>
-					</FieldLabel>
+					</FieldRow>
 				</Field>
 				<Field>
 					<FieldLabel>{t('Application_Name')}</FieldLabel>
@@ -136,7 +137,7 @@ const EditOauthApp = ({ onChange, data, ...props }: EditOauthAppProps): ReactEle
 				<Field>
 					<FieldLabel>{t('Client_Secret')}</FieldLabel>
 					<FieldRow>
-						<TextInput value={data.clientSecret} />
+						<PasswordInput value={data.clientSecret} />
 					</FieldRow>
 				</Field>
 				<Field>
@@ -153,7 +154,7 @@ const EditOauthApp = ({ onChange, data, ...props }: EditOauthAppProps): ReactEle
 				</Field>
 				<Field>
 					<FieldRow>
-						<ButtonGroup stretch w='full'>
+						<ButtonGroup stretch>
 							<Button onClick={close}>{t('Cancel')}</Button>
 							<Button primary onClick={handleSubmit(onSubmit)}>
 								{t('Save')}
@@ -163,7 +164,7 @@ const EditOauthApp = ({ onChange, data, ...props }: EditOauthAppProps): ReactEle
 				</Field>
 				<Field>
 					<FieldRow>
-						<ButtonGroup stretch w='full'>
+						<ButtonGroup stretch>
 							<Button icon='trash' danger onClick={openConfirmDelete}>
 								{t('Delete')}
 							</Button>

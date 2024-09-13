@@ -43,8 +43,16 @@ on:
         default: 1
         required: false
         type: number
+      retries:
+        default: 0
+        required: false
+        type: number
       type:
         required: true
+        type: string
+      db-watcher-disabled:
+        default: 'false'
+        required: false
         type: string
     secrets:
       CR_USER:
@@ -58,6 +66,8 @@ on:
       REPORTER_ROCKETCHAT_API_KEY:
         required: false
       CODECOV_TOKEN:
+        required: false
+      REPORTER_JIRA_ROCKETCHAT_API_KEY:
         required: false
 
 env:
@@ -79,9 +89,24 @@ jobs:
         mongodb-version: ${{ fromJSON(inputs.mongodb-version) }}
         shard: ${{ fromJSON(inputs.shard) }}
 
-    name: MongoDB ${{ matrix.mongodb-version }} (${{ matrix.shard }}/${{ inputs.total-shard }})
+    name: MongoDB ${{ matrix.mongodb-version }}${{ inputs.db-watcher-disabled == 'true' && ' [no watchers]' || '' }} (${{ matrix.shard }}/${{ inputs.total-shard }})${{ matrix.mongodb-version == '6.0' && ' - Alpine' || '' }}
 
     steps:
+      - name: Collect Workflow Telemetry
+        uses: catchpoint/workflow-telemetry-action@v2
+        with:
+          theme: dark
+          job_summary: true
+          comment_on_pr: false
+
+      - name: Login to GitHub Container Registry
+        if: (github.event.pull_request.head.repo.full_name == github.repository || github.event_name == 'release' || github.ref == 'refs/heads/develop')
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.CR_USER }}
+          password: ${{ secrets.CR_PAT }}
+
       - name: Launch MongoDB
         uses: supercharge/mongodb-github-action@v1.10.0
         with:
@@ -99,7 +124,7 @@ jobs:
 
       # if we are testing a PR from a fork, we need to build the docker image at this point
       - uses: ./.github/actions/build-docker
-        if: github.event.pull_request.head.repo.full_name != github.repository
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
         with:
           CR_USER: ${{ secrets.CR_USER }}
           CR_PAT: ${{ secrets.CR_PAT }}
@@ -127,6 +152,12 @@ jobs:
 
       - run: yarn build
 
+      - name: Prepare code coverage directory
+        if: inputs.release == 'ee'
+        run: |
+          mkdir -p /tmp/coverage
+          chmod 777 /tmp/coverage
+
       - name: Start containers for CE
         if: inputs.release == 'ce'
         env:
@@ -141,8 +172,17 @@ jobs:
           MONGO_URL: 'mongodb://host.docker.internal:27017/rocketchat?replicaSet=rs0&directConnection=true'
           ENTERPRISE_LICENSE: ${{ inputs.enterprise-license }}
           TRANSPORTER: ${{ inputs.transporter }}
+          COVERAGE_DIR: '/tmp/coverage'
+          COVERAGE_REPORTER: 'lcov'
+          DISABLE_DB_WATCHERS: ${{ inputs.db-watcher-disabled }}
         run: |
           docker compose -f docker-compose-ci.yml up -d
+
+      - name: Clean up temporary files
+        # remove all folders inside /tmp except /tmp/coverage
+        run: |
+          cd /tmp
+          sudo find . -mindepth 1 -maxdepth 1 -type d | grep -v './coverage' | sudo xargs rm -rf
 
       - name: Cache Playwright binaries
         if: inputs.type == 'ui'
@@ -152,7 +192,7 @@ jobs:
           path: |
             ~/.cache/ms-playwright
           # This is the version of Playwright that we are using, if you are willing to upgrade, you should update this.
-          key: playwright-1.37.1
+          key: playwright-1.40.1
 
       - name: Install Playwright
         if: inputs.type == 'ui' && steps.cache-playwright.outputs.cache-hit != 'true'
@@ -178,12 +218,16 @@ jobs:
             sleep 10
           done;
 
+      - name: Remove unused Docker images
+        run: docker system prune -af
       - name: E2E Test API
         if: inputs.type == 'api'
         working-directory: ./apps/meteor
         env:
           WEBHOOK_TEST_URL: 'http://host.docker.internal:10000'
           IS_EE: ${{ inputs.release == 'ee' && 'true' || '' }}
+          COVERAGE_DIR: '/tmp/coverage'
+          COVERAGE_REPORTER: 'lcovonly'
         run: |
           for i in $(seq 1 2); do
             npm run testapi && s=0 && break || s=$?
@@ -204,6 +248,9 @@ jobs:
               sleep 10
             done;
           done;
+          docker compose -f ../../docker-compose-ci.yml stop
+
+          ls -l $COVERAGE_DIR
           exit $s
 
       - name: E2E Test UI (${{ matrix.shard }}/${{ inputs.total-shard }})
@@ -213,13 +260,19 @@ jobs:
           IS_EE: ${{ inputs.release == 'ee' && 'true' || '' }}
           REPORTER_ROCKETCHAT_API_KEY: ${{ secrets.REPORTER_ROCKETCHAT_API_KEY }}
           REPORTER_ROCKETCHAT_URL: ${{ secrets.REPORTER_ROCKETCHAT_URL }}
+          REPORTER_JIRA_ROCKETCHAT_API_KEY: ${{ secrets.REPORTER_JIRA_ROCKETCHAT_API_KEY }}
           REPORTER_ROCKETCHAT_REPORT: ${{ github.event.pull_request.draft != 'true' && 'true' || '' }}
           REPORTER_ROCKETCHAT_RUN: ${{ github.run_number }}
           REPORTER_ROCKETCHAT_BRANCH: ${{ github.ref }}
           REPORTER_ROCKETCHAT_DRAFT: ${{ github.event.pull_request.draft }}
+          REPORTER_ROCKETCHAT_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPORTER_ROCKETCHAT_AUTHOR: ${{ github.event.pull_request.user.login }}
+          REPORTER_ROCKETCHAT_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPORTER_ROCKETCHAT_PR: ${{ github.event.pull_request.number }}
           QASE_API_TOKEN: ${{ secrets.QASE_API_TOKEN }}
           QASE_REPORT: ${{ github.ref == 'refs/heads/develop' && 'true' || '' }}
           CI: true
+          PLAYWRIGHT_RETRIES: ${{ inputs.retries }}
         working-directory: ./apps/meteor
         run: |
           yarn prepare
@@ -248,6 +301,22 @@ jobs:
           flags: e2e
           verbose: true
           token: ${{ secrets.CODECOV_TOKEN }}
+
+      - uses: codecov/codecov-action@v3
+        if: inputs.type == 'api' && inputs.release == 'ee'
+        with:
+          directory: /tmp/coverage
+          working-directory: .
+          flags: e2e-api
+          verbose: true
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Store e2e-api-ee-coverage
+        if: inputs.type == 'api' && inputs.release == 'ee'
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-api-ee-coverage
+          path: /tmp/coverage
 
       - name: Store e2e-ee-coverage
         if: inputs.type == 'ui' && inputs.release == 'ee'

@@ -45,6 +45,8 @@ export interface IBaseModel<
 > {
 	col: Collection<T>;
 
+	createIndexes(): Promise<string[] | void>;
+
 	getCollectionName(): string;
 
 	findOneAndUpdate(query: Filter<T>, update: UpdateFilter<T> | T, options?: FindOneAndUpdateOptions): Promise<ModifyResult<T>>;
@@ -82,6 +84,8 @@ export interface IBaseModel<
 	insertOne(doc: InsertionModel<T>, options?: InsertOneOptions): Promise<InsertOneResult<T>>;
 
 	removeById(_id: T['_id']): Promise<DeleteResult>;
+
+	removeByIds(ids: T['_id'][]): Promise<DeleteResult>;
 
 	deleteOne(filter: Filter<T>, options?: DeleteOptions & { bypassDocumentValidation?: boolean }): Promise<DeleteResult>;
 

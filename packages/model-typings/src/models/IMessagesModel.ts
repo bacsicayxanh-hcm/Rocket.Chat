@@ -18,10 +18,18 @@ import type {
 	UpdateResult,
 	Document,
 	Filter,
+	ModifyResult,
 } from 'mongodb';
 
 import type { FindPaginated, IBaseModel } from './IBaseModel';
 
+type PaginatedRequest<S extends string = string> = {
+	count?: number;
+	offset?: number;
+	sort?: `{ "${S}": ${1 | -1} }` | string;
+	/* deprecated */
+	query?: string;
+};
 export interface IMessagesModel extends IBaseModel<IMessage> {
 	findPaginatedVisibleByMentionAndRoomId(
 		username: IUser['username'],
@@ -43,19 +51,32 @@ export interface IMessagesModel extends IBaseModel<IMessage> {
 
 	findDiscussionsByRoomAndText(rid: IRoom['_id'], text: string, options?: FindOptions<IMessage>): FindPaginated<FindCursor<IMessage>>;
 
-	findAllNumberOfTransferredRooms(params: {
-		start: string;
-		end: string;
-		departmentId: ILivechatDepartment['_id'];
-		onlyCount: boolean;
-		options: any;
-	}): AggregationCursor<any>;
+	findAllNumberOfTransferredRooms(p: {
+		start: Date;
+		end: Date;
+		departmentId?: ILivechatDepartment['_id'];
+		onlyCount: true;
+		options?: PaginatedRequest;
+	}): AggregationCursor<{ total: number }>;
+
+	findAllNumberOfTransferredRooms(p: {
+		start: Date;
+		end: Date;
+		departmentId?: ILivechatDepartment['_id'];
+		onlyCount?: false;
+		options?: PaginatedRequest;
+	}): AggregationCursor<{ _id: string | null; numberOfTransferredRooms: number }>;
 
 	getTotalOfMessagesSentByDate(params: { start: Date; end: Date; options?: any }): Promise<any[]>;
 
 	findLivechatClosedMessages(rid: IRoom['_id'], searchTerm?: string, options?: FindOptions<IMessage>): FindPaginated<FindCursor<IMessage>>;
 	findLivechatMessages(rid: IRoom['_id'], options?: FindOptions<IMessage>): FindCursor<IMessage>;
-	findLivechatMessagesWithoutClosing(rid: IRoom['_id'], options?: FindOptions<IMessage>): FindCursor<IMessage>;
+	findLivechatMessagesWithoutTypes(
+		rid: IRoom['_id'],
+		ignoredTypes: IMessage['t'][],
+		showSystemMessages: boolean,
+		options?: FindOptions<IMessage>,
+	): FindCursor<IMessage>;
 	countRoomsWithStarredMessages(options: AggregateOptions): Promise<number>;
 
 	countRoomsWithPinnedMessages(options: AggregateOptions): Promise<number>;
@@ -97,6 +118,7 @@ export interface IMessagesModel extends IBaseModel<IMessage> {
 		roomId: IRoom['_id'],
 		types: IMessage['t'][],
 		ts: Date,
+		showSystemMessages: boolean,
 		options?: FindOptions<IMessage>,
 		showThreadMessages?: boolean,
 	): FindCursor<IMessage>;
@@ -189,7 +211,7 @@ export interface IMessagesModel extends IBaseModel<IMessage> {
 	updateAllUsernamesByUserId(userId: string, username: string): Promise<UpdateResult | Document>;
 
 	setUrlsById(_id: string, urls: NonNullable<IMessage['urls']>): Promise<UpdateResult>;
-	getLastVisibleMessageSentWithNoTypeByRoomId(rid: string, messageId?: string): Promise<IMessage | null>;
+	getLastVisibleUserMessageSentByRoomId(rid: string, messageId?: string): Promise<IMessage | null>;
 
 	findOneBySlackTs(slackTs: Date): Promise<IMessage | null>;
 
@@ -252,7 +274,7 @@ export interface IMessagesModel extends IBaseModel<IMessage> {
 	getMessageByFileId(fileID: string): Promise<IMessage | null>;
 	setThreadMessagesAsRead(tmid: string, until: Date): Promise<UpdateResult | Document>;
 	updateRepliesByThreadId(tmid: string, replies: string[], ts: Date): Promise<UpdateResult>;
-	refreshDiscussionMetadata(room: Pick<IRoom, '_id' | 'msgs' | 'lm'>): Promise<UpdateResult | Document | false>;
+	refreshDiscussionMetadata(room: Pick<IRoom, '_id' | 'msgs' | 'lm'>): Promise<ModifyResult<IMessage>>;
 	findUnreadThreadMessagesByDate(
 		tmid: string,
 		userId: string,

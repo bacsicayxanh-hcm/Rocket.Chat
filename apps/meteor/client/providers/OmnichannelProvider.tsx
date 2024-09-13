@@ -7,18 +7,17 @@ import type {
 import { useSafely } from '@rocket.chat/fuselage-hooks';
 import { useUser, useSetting, usePermission, useMethod, useEndpoint, useStream } from '@rocket.chat/ui-contexts';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import type { FC } from 'react';
+import type { ReactNode } from 'react';
 import React, { useState, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 
 import { LivechatInquiry } from '../../app/livechat/client/collections/LivechatInquiry';
 import { initializeLivechatInquiryStream } from '../../app/livechat/client/lib/stream/queueManager';
 import { getOmniChatSortQuery } from '../../app/livechat/lib/inquiries';
-import { Notifications } from '../../app/notifications/client';
 import { KonchatNotification } from '../../app/ui/client/lib/KonchatNotification';
-import { useHasLicenseModule } from '../../ee/client/hooks/useHasLicenseModule';
 import { ClientLogger } from '../../lib/ClientLogger';
 import type { OmnichannelContextValue } from '../contexts/OmnichannelContext';
 import { OmnichannelContext } from '../contexts/OmnichannelContext';
+import { useHasLicenseModule } from '../hooks/useHasLicenseModule';
 import { useReactiveValue } from '../hooks/useReactiveValue';
 import { useShouldPreventAction } from '../hooks/useShouldPreventAction';
 
@@ -37,11 +36,15 @@ const emptyContextValue: OmnichannelContextValue = {
 	},
 };
 
-const OmnichannelProvider: FC = ({ children }) => {
+type OmnichannelProviderProps = {
+	children?: ReactNode;
+};
+
+const OmnichannelProvider = ({ children }: OmnichannelProviderProps) => {
 	const omniChannelEnabled = useSetting('Livechat_enabled') as boolean;
 	const omnichannelRouting = useSetting('Livechat_Routing_Method');
 	const showOmnichannelQueueLink = useSetting('Livechat_show_queue_list_link') as boolean;
-	const omnichannelPoolMaxIncoming = useSetting('Livechat_guest_pool_max_number_incoming_livechats_displayed') as number;
+	const omnichannelPoolMaxIncoming = useSetting<number>('Livechat_guest_pool_max_number_incoming_livechats_displayed') ?? 0;
 	const omnichannelSortingMechanism = useSetting('Omnichannel_sorting_mechanism') as OmnichannelSortingMechanismSettingType;
 
 	const loggerRef = useRef(new ClientLogger('OmnichannelProvider'));
@@ -110,6 +113,7 @@ const OmnichannelProvider: FC = ({ children }) => {
 	const manuallySelected =
 		enabled && canViewOmnichannelQueue && !!routeConfig && routeConfig.showQueue && !routeConfig.autoAssignAgent && agentAvailable;
 
+	const streamNotifyUser = useStream('notify-user');
 	useEffect(() => {
 		if (!manuallySelected) {
 			return;
@@ -120,8 +124,11 @@ const OmnichannelProvider: FC = ({ children }) => {
 		};
 
 		initializeLivechatInquiryStream(user?._id);
-		return Notifications.onUser('departmentAgentData', handleDepartmentAgentData).stop;
-	}, [manuallySelected, user?._id]);
+		if (!user?._id) {
+			return;
+		}
+		return streamNotifyUser(`${user._id}/departmentAgentData`, handleDepartmentAgentData);
+	}, [manuallySelected, streamNotifyUser, user?._id]);
 
 	const queue = useReactiveValue<ILivechatInquiryRecord[] | undefined>(
 		useCallback(() => {
@@ -130,16 +137,13 @@ const OmnichannelProvider: FC = ({ children }) => {
 			}
 
 			return LivechatInquiry.find(
-				{
-					status: 'queued',
-					$or: [{ defaultAgent: { $exists: false } }, { 'defaultAgent.agentId': user?._id }],
-				},
+				{ status: 'queued' },
 				{
 					sort: getOmniChatSortQuery(omnichannelSortingMechanism),
 					limit: omnichannelPoolMaxIncoming,
 				},
 			).fetch();
-		}, [manuallySelected, omnichannelPoolMaxIncoming, omnichannelSortingMechanism, user?._id]),
+		}, [manuallySelected, omnichannelPoolMaxIncoming, omnichannelSortingMechanism]),
 	);
 
 	queue?.map(({ rid }) => {

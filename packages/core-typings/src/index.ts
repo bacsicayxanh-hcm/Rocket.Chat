@@ -17,6 +17,7 @@ export * from './UserStatus';
 export * from './IUserAction';
 export * from './IBanner';
 export * from './IStats';
+export * from './IMatrixFederationStatistics';
 export * from './IServerInfo';
 export * from './IWorkspaceInfo';
 export * from './IInstanceStatus';
@@ -33,6 +34,7 @@ export * from './IRocketChatAssets';
 export * from './IPushToken';
 export * from './IPushNotificationConfig';
 export * from './SlashCommands';
+export * from './license';
 
 export * from './IUserDataFile';
 export * from './IUserSession';
@@ -135,6 +137,6 @@ export * from './ICustomOAuthConfig';
 export * from './IModerationReport';
 export * from './CustomFieldMetadata';
 
-export * as Cloud from './cloud';
+export * from './RoomRouteData';
 
-export * as UiKit from './uikit';
+export * as Cloud from './cloud';

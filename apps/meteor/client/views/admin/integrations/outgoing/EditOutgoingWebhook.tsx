@@ -6,7 +6,7 @@ import React, { useCallback } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import GenericModal from '../../../../components/GenericModal';
-import Page from '../../../../components/Page';
+import { Page, PageHeader, PageScrollableContentWithShadow, PageFooter } from '../../../../components/Page';
 import { triggerWordsToArray, triggerWordsToString } from '../helpers/triggerWords';
 import { useCreateIntegration } from '../hooks/useCreateIntegration';
 import { useDeleteIntegration } from '../hooks/useDeleteIntegration';
@@ -14,27 +14,27 @@ import { useUpdateIntegration } from '../hooks/useUpdateIntegration';
 import OutgoingWebhookForm from './OutgoingWebhookForm';
 
 const getInitialValue = (webhookData: Serialized<IOutgoingIntegration> | undefined, defaultToken: string) => ({
-	enabled: webhookData?.enabled || true,
-	impersonateUser: webhookData?.impersonateUser || false,
-	event: webhookData?.event || 'sendMessage',
+	enabled: webhookData?.enabled ?? true,
+	impersonateUser: webhookData?.impersonateUser ?? false,
+	event: webhookData?.event ?? 'sendMessage',
 	urls: webhookData?.urls?.join('\n') ?? '',
-	token: webhookData?.token || defaultToken,
-	triggerWords: triggerWordsToString(webhookData?.triggerWords) || '',
-	targetRoom: webhookData?.targetRoom || '',
-	channel: webhookData?.channel.join(', ') || '',
-	username: webhookData?.username || '',
-	name: webhookData?.name || '',
-	alias: webhookData?.alias || '',
-	avatar: webhookData?.avatar || '',
-	emoji: webhookData?.emoji || '',
-	scriptEnabled: webhookData?.scriptEnabled || false,
-	scriptEngine: webhookData?.scriptEngine || 'isolated-vm',
-	script: webhookData?.script || '',
-	retryFailedCalls: webhookData?.retryFailedCalls || true,
-	retryCount: webhookData?.retryCount || 6,
-	retryDelay: webhookData?.retryDelay || 'powers-of-ten',
-	triggerWordAnywhere: webhookData?.triggerWordAnywhere || false,
-	runOnEdits: webhookData?.runOnEdits || true,
+	token: webhookData?.token ?? defaultToken,
+	triggerWords: triggerWordsToString(webhookData?.triggerWords) ?? '',
+	targetRoom: webhookData?.targetRoom ?? '',
+	channel: webhookData?.channel.join(', ') ?? '',
+	username: webhookData?.username ?? '',
+	name: webhookData?.name ?? '',
+	alias: webhookData?.alias ?? '',
+	avatar: webhookData?.avatar ?? '',
+	emoji: webhookData?.emoji ?? '',
+	scriptEnabled: webhookData?.scriptEnabled ?? false,
+	scriptEngine: webhookData?.scriptEngine ?? 'isolated-vm',
+	script: webhookData?.script ?? '',
+	retryFailedCalls: webhookData?.retryFailedCalls ?? true,
+	retryCount: webhookData?.retryCount ?? 6,
+	retryDelay: webhookData?.retryDelay ?? 'powers-of-ten',
+	triggerWordAnywhere: webhookData?.triggerWordAnywhere ?? false,
+	runOnEdits: webhookData?.runOnEdits ?? true,
 });
 
 const OUTGOING_TYPE = 'webhook-outgoing';
@@ -100,11 +100,8 @@ const EditOutgoingWebhook = ({ webhookData }: { webhookData?: Serialized<IOutgoi
 
 	return (
 		<Page flexDirection='column'>
-			<Page.Header title={t('Integration_Outgoing_WebHook')}>
+			<PageHeader title={t('Integration_Outgoing_WebHook')} onClickBack={() => router.navigate('/admin/integrations/webhook-outgoing')}>
 				<ButtonGroup>
-					<Button icon='back' onClick={() => router.navigate('/admin/integrations/webhook-outgoing')}>
-						{t('Back')}
-					</Button>
 					{webhookData?._id && (
 						<Button onClick={() => router.navigate(`/admin/integrations/history/outgoing/${webhookData._id}`)}>{t('History')}</Button>
 					)}
@@ -114,7 +111,7 @@ const EditOutgoingWebhook = ({ webhookData }: { webhookData?: Serialized<IOutgoi
 						</Button>
 					)}
 				</ButtonGroup>
-			</Page.Header>
+			</PageHeader>
 			{!webhookData?._id && (
 				<Tabs>
 					<TabsItem selected={tab === 'incoming'} onClick={() => router.navigate('/admin/integrations/new/incoming')}>
@@ -125,12 +122,12 @@ const EditOutgoingWebhook = ({ webhookData }: { webhookData?: Serialized<IOutgoi
 					</TabsItem>
 				</Tabs>
 			)}
-			<Page.ScrollableContentWithShadow is='form' id={formId} onSubmit={handleSubmit(handleSave)}>
+			<PageScrollableContentWithShadow is='form' id={formId} onSubmit={handleSubmit(handleSave)}>
 				<FormProvider {...methods}>
 					<OutgoingWebhookForm />
 				</FormProvider>
-			</Page.ScrollableContentWithShadow>
-			<Page.Footer isDirty={isDirty}>
+			</PageScrollableContentWithShadow>
+			<PageFooter isDirty={isDirty}>
 				<ButtonGroup>
 					<Button type='reset' onClick={() => reset()}>
 						{t('Cancel')}
@@ -139,7 +136,7 @@ const EditOutgoingWebhook = ({ webhookData }: { webhookData?: Serialized<IOutgoi
 						{t('Save')}
 					</Button>
 				</ButtonGroup>
-			</Page.Footer>
+			</PageFooter>
 		</Page>
 	);
 };

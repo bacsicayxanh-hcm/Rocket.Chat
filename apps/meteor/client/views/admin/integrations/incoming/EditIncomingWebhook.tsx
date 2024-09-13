@@ -6,24 +6,24 @@ import React, { useCallback } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import GenericModal from '../../../../components/GenericModal';
-import Page from '../../../../components/Page';
+import { Page, PageHeader, PageScrollableContentWithShadow, PageFooter } from '../../../../components/Page';
 import { useCreateIntegration } from '../hooks/useCreateIntegration';
 import { useDeleteIntegration } from '../hooks/useDeleteIntegration';
 import { useUpdateIntegration } from '../hooks/useUpdateIntegration';
 import IncomingWebhookForm from './IncomingWebhookForm';
 
 const getInitialValue = (webhookData: Serialized<IIncomingIntegration> | undefined) => ({
-	enabled: webhookData?.enabled || false,
-	channel: webhookData?.channel.join(', ') || '',
-	username: webhookData?.username || '',
-	name: webhookData?.name || '',
-	alias: webhookData?.alias || '',
-	avatar: webhookData?.avatar || '',
-	emoji: webhookData?.emoji || '',
-	scriptEnabled: webhookData?.scriptEnabled || false,
-	scriptEngine: webhookData?.scriptEngine || 'isolated-vm',
-	overrideDestinationChannelEnabled: webhookData?.overrideDestinationChannelEnabled || false,
-	script: webhookData?.script || '',
+	enabled: webhookData?.enabled ?? true,
+	channel: webhookData?.channel.join(', ') ?? '',
+	username: webhookData?.username ?? '',
+	name: webhookData?.name ?? '',
+	alias: webhookData?.alias ?? '',
+	avatar: webhookData?.avatar ?? '',
+	emoji: webhookData?.emoji ?? '',
+	scriptEnabled: webhookData?.scriptEnabled ?? false,
+	scriptEngine: webhookData?.scriptEngine ?? 'isolated-vm',
+	overrideDestinationChannelEnabled: webhookData?.overrideDestinationChannelEnabled ?? false,
+	script: webhookData?.script ?? '',
 });
 
 const INCOMING_TYPE = 'webhook-incoming';
@@ -77,18 +77,15 @@ const EditIncomingWebhook = ({ webhookData }: { webhookData?: Serialized<IIncomi
 
 	return (
 		<Page flexDirection='column'>
-			<Page.Header title={t('Integration_Incoming_WebHook')}>
+			<PageHeader title={t('Integration_Incoming_WebHook')} onClickBack={() => router.navigate('/admin/integrations/webhook-incoming')}>
 				<ButtonGroup>
-					<Button icon='back' onClick={() => router.navigate('/admin/integrations/webhook-incoming')}>
-						{t('Back')}
-					</Button>
 					{webhookData?._id && (
 						<Button danger onClick={handleDeleteIntegration}>
 							{t('Delete')}
 						</Button>
 					)}
 				</ButtonGroup>
-			</Page.Header>
+			</PageHeader>
 			{!webhookData?._id && (
 				<Tabs>
 					<TabsItem selected={tab === 'incoming'} onClick={() => router.navigate('/admin/integrations/new/incoming')}>
@@ -99,12 +96,12 @@ const EditIncomingWebhook = ({ webhookData }: { webhookData?: Serialized<IIncomi
 					</TabsItem>
 				</Tabs>
 			)}
-			<Page.ScrollableContentWithShadow id={formId} is='form' onSubmit={handleSubmit(handleSave)}>
+			<PageScrollableContentWithShadow id={formId} is='form' onSubmit={handleSubmit(handleSave)}>
 				<FormProvider {...methods}>
 					<IncomingWebhookForm webhookData={webhookData} />
 				</FormProvider>
-			</Page.ScrollableContentWithShadow>
-			<Page.Footer isDirty={isDirty}>
+			</PageScrollableContentWithShadow>
+			<PageFooter isDirty={isDirty}>
 				<ButtonGroup>
 					<Button type='reset' onClick={() => reset()}>
 						{t('Cancel')}
@@ -113,7 +110,7 @@ const EditIncomingWebhook = ({ webhookData }: { webhookData?: Serialized<IIncomi
 						{t('Save')}
 					</Button>
 				</ButtonGroup>
-			</Page.Footer>
+			</PageFooter>
 		</Page>
 	);
 };

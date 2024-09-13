@@ -9,7 +9,7 @@ import type {
 	AtLeast,
 	ILivechatAgentStatus,
 } from '@rocket.chat/core-typings';
-import type { Document, UpdateResult, FindCursor, FindOptions, Filter, InsertOneResult, DeleteResult } from 'mongodb';
+import type { Document, UpdateResult, FindCursor, FindOptions, Filter, InsertOneResult, DeleteResult, ModifyResult } from 'mongodb';
 
 import type { FindPaginated, IBaseModel } from './IBaseModel';
 
@@ -77,6 +77,8 @@ export interface IUsersModel extends IBaseModel<IUser> {
 
 	findLDAPUsers<T = IUser>(options?: any): FindCursor<T>;
 
+	findLDAPUsersExceptIds<T = IUser>(userIds: IUser['_id'][], options?: FindOptions<IUser>): FindCursor<T>;
+
 	findConnectedLDAPUsers<T = IUser>(options?: any): FindCursor<T>;
 
 	isUserInRole(userId: IUser['_id'], roleId: IRole['_id']): Promise<boolean>;
@@ -132,8 +134,6 @@ export interface IUsersModel extends IBaseModel<IUser> {
 
 	addBusinessHourByAgentIds(agentIds: string[], businessHourId: string): any;
 
-	makeAgentsWithinBusinessHourAvailable(agentIds?: string[]): Promise<UpdateResult | Document>;
-
 	removeBusinessHourByAgentIds(agentIds: any, businessHourId: any): any;
 
 	openBusinessHourToAgentsWithoutDepartment(agentIdsWithDepartment: any, businessHourId: any): any;
@@ -141,8 +141,6 @@ export interface IUsersModel extends IBaseModel<IUser> {
 	closeBusinessHourToAgentsWithoutDepartment(agentIdsWithDepartment: any, businessHourId: any): any;
 
 	closeAgentsBusinessHoursByBusinessHourIds(businessHourIds: any): any;
-
-	updateLivechatStatusBasedOnBusinessHours(userIds?: any): any;
 
 	setLivechatStatusActiveBasedOnBusinessHours(userId: any): any;
 
@@ -164,7 +162,7 @@ export interface IUsersModel extends IBaseModel<IUser> {
 
 	isUserInRoleScope(uid: IUser['_id']): Promise<boolean>;
 
-	addBannerById(_id: any, banner: any): any;
+	addBannerById(_id: IUser['_id'], banner: any): Promise<UpdateResult>;
 
 	findOneByAgentUsername(username: any, options: any): any;
 
@@ -279,8 +277,10 @@ export interface IUsersModel extends IBaseModel<IUser> {
 	disableEmail2FAByUserId(userId: string): Promise<UpdateResult>;
 	findByIdsWithPublicE2EKey(userIds: string[], options?: FindOptions<IUser>): FindCursor<IUser>;
 	resetE2EKey(userId: string): Promise<UpdateResult>;
-	removeExpiredEmailCodesOfUserId(userId: string): Promise<UpdateResult>;
-	removeEmailCodeByUserIdAndCode(userId: string, code: string): Promise<UpdateResult>;
+	removeExpiredEmailCodeOfUserId(userId: string): Promise<UpdateResult>;
+	removeEmailCodeByUserId(userId: string): Promise<UpdateResult>;
+	increaseInvalidEmailCodeAttempt(userId: string): Promise<UpdateResult>;
+	maxInvalidEmailCodeAttemptsReached(userId: string, maxAttemtps: number): Promise<boolean>;
 	addEmailCodeByUserId(userId: string, code: string, expire: Date): Promise<UpdateResult>;
 	findActiveUsersInRoles(roles: string[], options?: FindOptions<IUser>): FindCursor<IUser>;
 	countActiveUsersInRoles(roles: string[], options?: FindOptions<IUser>): Promise<number>;
@@ -387,4 +387,9 @@ export interface IUsersModel extends IBaseModel<IUser> {
 		options: FindOptions<IUser>,
 	): Promise<{ sortedResults: (T & { departments: string[] })[]; totalCount: { total: number }[] }[]>;
 	countByRole(roleName: string): Promise<number>;
+	removeEmailCodeOfUserId(userId: string): Promise<UpdateResult>;
+	incrementInvalidEmailCodeAttempt(userId: string): Promise<ModifyResult<IUser>>;
+	findOnlineButNotAvailableAgents(userIds: string[] | null): FindCursor<Pick<ILivechatAgent, '_id' | 'openBusinessHours'>>;
+	findAgentsAvailableWithoutBusinessHours(userIds: string[] | null): FindCursor<Pick<ILivechatAgent, '_id' | 'openBusinessHours'>>;
+	updateLivechatStatusByAgentIds(userIds: string[], status: ILivechatAgentStatus): Promise<UpdateResult>;
 }
