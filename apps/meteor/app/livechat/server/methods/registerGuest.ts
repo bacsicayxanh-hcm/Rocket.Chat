@@ -50,7 +50,9 @@ Meteor.methods<ServerMethods>({
 
 		const visitor = await LivechatVisitors.getVisitorByToken(token, {
 			projection: {
+                // Custom: Start
 				_id: 1,
+                // Custom: End
 				token: 1,
 				name: 1,
 				username: 1,

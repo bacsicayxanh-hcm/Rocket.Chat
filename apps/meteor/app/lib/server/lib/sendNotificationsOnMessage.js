@@ -173,6 +173,7 @@ export const sendNotification = async ({
 		});
 	}
 };
+// Custom: Start
 export const sendNotificationVisitor = async ({
 	uid,
 	sender,
@@ -241,6 +242,8 @@ export const sendNotificationVisitor = async ({
 		console.error(error);
 	}
 };
+// Custom: End
+
 
 const project = {
 	$project: {
@@ -306,6 +309,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 	const maxMembersForNotification = settings.get('Notifications_Max_Room_Members');
 	const roomMembersCount = await Users.countRoomMembers(room._id);
 	const disableAllMessageNotifications = roomMembersCount > maxMembersForNotification && maxMembersForNotification !== 0;
+	// Custom: Start
 	if (!message.token) { // send By Agent
 		logger.debug("Message Send By Agent");
 		const livechatRoom = await LivechatRooms.findOneById(room._id, {
@@ -338,6 +342,7 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 
 	let sender = await roomCoordinator.getRoomDirectives(room.t).getMsgSender(message.u._id);
 	logger.debug("Message send by Guest: ", sender);
+	// Custom: End
 
 
 
@@ -408,9 +413,10 @@ export async function sendMessageNotifications(message, room, usersInThread = []
 			}),
 	);
 
+	// Custom: Start
 	// const visitorRoom = await LivechatRooms.col.aggregate([{ $match: {
 	// 	rid: room._id} }, vLookup, vProject]).toArray();
-
+	// Custom: End
 
 
 	return {

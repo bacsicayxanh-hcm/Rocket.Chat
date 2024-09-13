@@ -2276,6 +2276,7 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		return this.find(query);
 	}
 
+    // Custom: Start
 	changeAgentByRoomId(roomId: string, newAgent: { agentId: string; username: string;name?: string; ts?: Date }) {
 		const query: Filter<IOmnichannelRoom> = {
 			_id: roomId,
@@ -2286,13 +2287,16 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 				servedBy: {
 					_id: newAgent.agentId,
 					username: newAgent.username,
+                    // Custom: Start
 					name: newAgent.name,
-					ts: newAgent.ts || new Date(), 
+					ts: newAgent.ts || new Date(),
+                    // Custom: End
 				},
 			},
 		};
 		return this.updateOne(query, update);
 	}
+    // Custom: End
 
 	changeDepartmentIdByRoomId(roomId: string, departmentId: string) {
 		const query: Filter<IOmnichannelRoom> = {
@@ -2382,6 +2386,7 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 		return this.updateOne(query, update);
 	}
 
+    // Custom: Start
 	setVisitorLastSeenByRoomId(roomId: string, lastSeen: Date) {
 		const query = {
 			_id: roomId,
@@ -2408,6 +2413,7 @@ export class LivechatRoomsRaw extends BaseRaw<IOmnichannelRoom> implements ILive
 
 		return this.updateOne(query, update);
 	}
+    // Custom: End
 
 	setVisitorInactivityInSecondsById(roomId: string, visitorInactivity: number) {
 		const query = {

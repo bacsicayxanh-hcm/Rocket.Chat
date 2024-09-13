@@ -39,6 +39,7 @@ type PushGetProps = {
 	id: string;
 };
 
+// Custom: Start
 type RegisterVisitorDeviceTokenProps = {
 	token: string
 	id?: string;
@@ -73,6 +74,8 @@ const RegisterVisitorDeviceTokenPropsSchema = {
 
 export const isRegisterVisitorDeviceTokenProps = ajv.compile<RegisterVisitorDeviceTokenProps>(RegisterVisitorDeviceTokenPropsSchema);
 
+// Custom: End
+
 const PushGetPropsSchema = {
 	type: 'object',
 	properties: {
@@ -91,10 +94,12 @@ export type PushEndpoints = {
 		POST: (payload: PushTokenProps) => { result: IPushToken };
 		DELETE: (payload: { token: string }) => void;
 	};
+    // Custom: Start
 	'/v1/registerVisitorDeviceToken': {
 		POST: (payload: RegisterVisitorDeviceTokenProps) => { result: IPushToken };
 		DELETE: (payload: { deviceToken: string, visitorToken : string}) => void;
 	};
+    // Custom: End
 	'/v1/push.get': {
 		GET: (params: PushGetProps) => {
 			data: {

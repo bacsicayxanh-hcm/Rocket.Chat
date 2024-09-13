@@ -117,6 +117,7 @@ export const QueueManager: queueManager = {
 
 		return newRoom;
 	},
+    // Custom: Start
 	async requestRoomWithoutCheckOnlineAgent({ guest, message, roomInfo, agent, extraData }) {
 		logger.debug(`Requesting a room for guest ${guest._id}`);
 		check(
@@ -169,7 +170,7 @@ export const QueueManager: queueManager = {
 
 		return newRoom;
 	},
-
+    // Custom: End
 	async unarchiveRoom(archivedRoom) {
 		if (!archivedRoom) {
 			throw new Error('no-room-to-unarchive');

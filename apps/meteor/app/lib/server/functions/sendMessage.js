@@ -289,8 +289,10 @@ export const sendMessage = async function (user, message, room, upsert = false, 
 		Defer other updates as their return is not interesting to the user
 		*/
 
+		// Custom: Start
 		// Execute all callbacks
 		// sendAllNotifications(message, room);
+		// Custom: End
 
 		await callbacks.run('afterSaveMessage', message, room);
 		return message;

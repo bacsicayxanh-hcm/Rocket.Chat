@@ -413,6 +413,7 @@ class LivechatClass {
 
 		return { room, newRoom };
 	}
+    // Custom: Start
 	async getRoomWithoutCheckOnlineAgent(
 		guest: ILivechatVisitor,
 		message: Pick<IMessage, 'rid' | 'msg'>,
@@ -482,6 +483,7 @@ class LivechatClass {
 
 		return { room, newRoom };
 	}
+    // Custom: End
 
 	async checkOnlineAgents(department?: string, agent?: { agentId: string }, skipFallbackCheck = false): Promise<boolean> {
 		if (agent?.agentId) {
