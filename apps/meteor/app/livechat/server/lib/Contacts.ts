@@ -136,9 +136,11 @@ export const Contacts = {
 		if (rooms?.length) {
 			for await (const room of rooms) {
 				const { _id: rid } = room;
+                // Begin: Custom
 				(await Rooms.setFnameById(rid, name, phone??"")) &&
 					(await LivechatInquiry.setNameByRoomId(rid, name)) &&
-					(await Subscriptions.updateDisplayNameByRoomId(rid, name,phone??""));			
+					(await Subscriptions.updateDisplayNameByRoomId(rid, name,phone??""));
+                // End: Custom
 			}
 		}
 

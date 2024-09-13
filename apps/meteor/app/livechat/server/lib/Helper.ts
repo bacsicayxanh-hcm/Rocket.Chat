@@ -75,13 +75,18 @@ export const createLivechatRoom = async (
     );
 
     const extraRoomInfo = await callbacks.run('livechat.beforeRoom', roomInfo, extraData);
+    // Begin: Custom
     const { _id, username, token, department: departmentId, status = 'online', phone, visitorEmails } = guest;
+    // End: Custom
+
     const newRoomAt = new Date();
 
+    // Begin: Custom
     const { activity } = guest;
     if (guest.phone && guest.phone[0] && guest.phone[0].phoneNumber) {
         logger.debug(`GuestPHONE`, guest.phone[0].phoneNumber);
     }
+    // End: Custom
 
     const room: InsertionModel<IOmnichannelRoom> = Object.assign(
         {
@@ -98,8 +103,10 @@ export const createLivechatRoom = async (
                 username,
                 token,
                 status,
+                // Begin: Custom
                 phone,
                 visitorEmails,
+                // End: Custom
                 ...(activity?.length && { activity }),
             },
             cl: false,
@@ -119,7 +126,9 @@ export const createLivechatRoom = async (
         extraRoomInfo,
     );
 
+    // Begin: Custom
     logger.debug(`V RoomInfo`, room.v);
+    // End: Custom
 
     const roomId = (await Rooms.insertOne(room)).insertedId;
 
@@ -167,14 +176,19 @@ export const createLivechatInquiry = async ({
 
     const extraInquiryInfo = await callbacks.run('livechat.beforeInquiry', extraData);
 
+    // Begin: Custom
     const { _id, username, token, department, status = UserStatus.ONLINE, activity, phone } = guest;
+    // End: Custom
+
     const { msg } = message;
     const ts = new Date();
 
+    // Begin: Custom
     logger.debug({
         msg: `Creating livechat inquiry for visitor ${_id} --  ${phone}`,
         visitor: { _id, username, department, phone, status, activity },
     });
+    // End: Custom
 
     const inquiry: InsertionModel<ILivechatInquiryRecord> = {
         rid,
@@ -234,11 +248,13 @@ export const createLivechatSubscription = async (
     }
 
     const { _id, username, token, status = UserStatus.ONLINE } = guest;
+
+    // Begin: Custom
     let phone;
     logger.debug('INSERT NEW SUBSCRIPTION:',_id ,"Phone:",phone);
     if (guest.phone && guest.phone[0] && guest.phone[0].phoneNumber){
         logger.debug(`Visitor Phone: ${guest.phone[0].phoneNumber}`);
-        phone =guest.phone; 
+        phone =guest.phone;
     } else {
         var fVisitor = await LivechatVisitors.findOneById(guest._id,{projection :{
             _id:1,
@@ -249,6 +265,7 @@ export const createLivechatSubscription = async (
         }
         logger.debug(`Find Phone: ${phone}`);
     }
+    // End: Custom
 
     const subscriptionData: InsertionModel<ISubscription> = {
         rid,
@@ -273,12 +290,16 @@ export const createLivechatSubscription = async (
             _id,
             username,
             token,
+            // Begin: Custom
             phone,
+            // End: Custom
             status,
         },
+        // Begin: Custom
         ts: new Date(),
         lr: new Date(),
         ls: new Date(),
+        // End: Custom
         ...(department && { department }),
     };
 
