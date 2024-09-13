@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - to_rebase
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -23,7 +22,7 @@ env:
 jobs:
   release-versions:
     name: ⚙️ Variables Setup
-    runs-on: ubuntu-latest
+    runs-on: ubuntu
     outputs:
       release: ${{ steps.by-tag.outputs.release }}
       latest-release: ${{ steps.latest.outputs.latest-release }}
@@ -87,7 +86,7 @@ jobs:
   build:
     name: 📦 Build
     needs: [release-versions]
-    runs-on: [ubuntu-latest,self-hosted]
+    runs-on: [ ubuntu, self-hosted ]
 
     steps:
       - uses: actions/checkout@v3
@@ -191,19 +190,3 @@ jobs:
       - name: Remove build
         run: |
           rm -r -f /tmp/dist
-
-  deploy-k8s:
-    name: Deploy to k8s
-    runs-on: ubuntu-latest
-    needs: [release-versions, build]
-    steps:
-      - name: Deploy to K8s
-        uses: wahyd4/kubectl-helm-action@master
-        env:
-          KUBE_CONFIG_DATA: ${{ secrets.KUBE_CONFIG }}
-          IMAGE_TAG: ${{needs.release-versions.outputs.gh-docker-tag}}.test
-        with:
-          args: |
-            $IMAGE_TAG="$IMAGE_TAG.test"
-            echo $IMAGE_TAG && \
-            helm upgrade --install ${{ env.HELM_RELEASE_NAME }} ${{ env.HELM_CHART }} -n ${{ env.HELM_RELEASE_NAMESPACE }} --version ${{ env.HELM_RELEASE_VERSION }} --repo ${{ env.HELM_RELEASE_REPO }} --reuse-values --set image.tag=$IMAGE_TAG --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.DOCKER_IMAGE_NAME }}/rocket.chat
